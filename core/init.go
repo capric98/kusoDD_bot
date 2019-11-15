@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
 	"strconv"
 
 	jsoniter "github.com/json-iterator/go"
@@ -126,12 +125,7 @@ func (bot *tgbot) Run() {
 		return
 	}
 
-	go srv.ListenAndServe()
-
-	c := make(chan os.Signal, 2)
-	signal.Notify(c, os.Interrupt, os.Kill)
-	<-c
-	bot.CancelWebHook()
+	srv.ListenAndServe()
 }
 
 func (bot *tgbot) Log(body interface{}, level int) {
