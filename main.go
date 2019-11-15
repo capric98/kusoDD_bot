@@ -13,6 +13,11 @@ var (
 
 func main() {
 	flag.Parse()
+
+	//go func() {
+	//	log.Println(http.ListenAndServe("localhost:6060", nil))
+	//}()
+
 	bot := core.Newbot(config, loglevel)
 	if bot != nil {
 		bot.Run()

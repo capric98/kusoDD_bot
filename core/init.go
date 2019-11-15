@@ -1,13 +1,17 @@
 package core
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+
+	jsoniter "github.com/json-iterator/go"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type tgbot struct {
 	client     *http.Client
@@ -120,7 +124,14 @@ func (bot *tgbot) Run() {
 	defer bot.CancelWebHook()
 
 	srv.ListenAndServe()
-	fmt.Println("Finish")
+
+	qsignal := make(chan error, 2)
+	go func() {
+		c := make(chan os.Signal)
+		signal.Notify(c, os.Interrupt)
+		qsignal <- fmt.Errorf("%s", <-c)
+	}() // Receive system signal.
+	<-qsignal
 }
 
 func (bot *tgbot) Log(body interface{}, level int) {
