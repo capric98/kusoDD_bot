@@ -39,24 +39,56 @@ type Message struct {
 		ForwardMsgID  int64  `json:"forward_from_message_id"`
 		ForwardDate   int64  `json:"forward_date"`
 
-		Photo        []MessagePhoto `json:"photo"`
-		MediaGroupID string         `json:"media_group_id"`
+		Photo           []MsgPhoto  `json:"photo"`
+		MediaGroupID    string      `json:"media_group_id"`
+		Audio           MsgAudio    `json:"audio"`
+		Video           MsgVideo    `json:"video"`
+		Animation       MsgAnime    `json:"animation"`
+		Entities        []MsgEntity `json:"entities"`
+		CaptionEntities []MsgEntity `json:"caption_entities"`
 	} `json:"message"`
 }
 
-type MessagePhoto struct {
+type MsgPhoto struct {
 	FileID   string `json:"file_id"`
 	FileSize int64  `json:"file_size"`
 	Width    int    `json:"width"`
 	Height   int    `json:"height"`
 }
 
-type MessageFile struct {
-	FileName string       `json:"file_name"`
-	MimeType string       `json:"mime_type"`
-	Thumb    MessagePhoto `json:"thumb"`
-	FileID   string       `json:"file_id"`
-	FileSize int64        `json:"file_size"`
+type MsgFile struct {
+	FileName string   `json:"file_name"`
+	MimeType string   `json:"mime_type"`
+	Thumb    MsgPhoto `json:"thumb"`
+	FileID   string   `json:"file_id"`
+	FileSize int64    `json:"file_size"`
+}
+
+type MsgEntity struct {
+	Offset int    `json:"offset"`
+	Length int    `json:"length"`
+	Type   string `json:"type"`
+}
+
+type MsgAudio struct {
+	Duration  int    `json:"duration"`
+	Title     string `json:"title"`
+	Performer string `json:"performer"`
+	MsgFile
+}
+
+type MsgVideo struct {
+	Duration int `json:"duration"`
+	Width    int `json:"width"`
+	Height   int `json:"height"`
+	MsgFile
+}
+
+type MsgAnime struct {
+	Duration int `json:"duration"`
+	Width    int `json:"width"`
+	Height   int `json:"height"`
+	MsgFile
 }
 
 func (msg *Message) GetStrMsgID() string {

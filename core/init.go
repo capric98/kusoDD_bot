@@ -106,7 +106,7 @@ func (bot *tgbot) Run() {
 
 		switch r.Method {
 		case "POST":
-			bot.Handle(w, r)
+			bot.Handle(r)
 		default:
 			http.Error(w, "Only support POST method.", http.StatusBadRequest)
 		}

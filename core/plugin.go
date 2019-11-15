@@ -1,8 +1,6 @@
 package core
 
-import "net/http"
-
 type Plugin interface {
-	Handle(*Message, http.ResponseWriter) (bool, error)
+	Handle(*Message) (bool, error)
 	Name() string
 }
