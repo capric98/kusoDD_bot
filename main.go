@@ -2,9 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"os"
-	"os/signal"
 
 	"github.com/capric98/kusoDD_bot/core"
 )
@@ -25,13 +22,4 @@ func main() {
 	if bot != nil {
 		bot.Run()
 	}
-
-	qsignal := make(chan error, 2)
-	go func() {
-		c := make(chan os.Signal)
-		signal.Notify(c, os.Interrupt)
-		qsignal <- fmt.Errorf("%s", <-c)
-	}() // Receive system signal.
-	<-qsignal
-	bot.CancelWebHook()
 }
