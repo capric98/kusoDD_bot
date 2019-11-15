@@ -94,9 +94,11 @@ func Newbot(conf *string, loglevel *string) *tgbot {
 }
 
 func (bot *tgbot) Run() {
+	bot.CancelWebHook()
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != bot.hookSuffix {
+		if r.URL.Path != bot.hookPath {
 			http.Error(w, "Bad request.", http.StatusBadRequest)
 			return
 		}
@@ -110,7 +112,6 @@ func (bot *tgbot) Run() {
 			http.Error(w, "Only support POST method.", http.StatusBadRequest)
 		}
 	})
-	// stuck here
 
 	srv := &http.Server{
 		Addr:    "127.0.0.1:" + strconv.Itoa(bot.port),
@@ -124,7 +125,6 @@ func (bot *tgbot) Run() {
 		bot.Log(e, 1)
 		return
 	}
-	defer bot.CancelWebHook()
 
 	srv.ListenAndServe()
 
@@ -134,7 +134,8 @@ func (bot *tgbot) Run() {
 		signal.Notify(c, os.Interrupt)
 		qsignal <- fmt.Errorf("%s", <-c)
 	}() // Receive system signal.
-	<-qsignal
+	<-qsignal // stuck here
+	bot.CancelWebHook()
 }
 
 func (bot *tgbot) Log(body interface{}, level int) {
