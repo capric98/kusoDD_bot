@@ -10,7 +10,7 @@ var msgPool = sync.Pool{
 	},
 }
 
-func (b *tgbot) Handle(w http.ResponseWriter, r *http.Request) {
+func (b *tgbot) Handle(r *http.Request) {
 	msg := msgPool.Get()
 	defer msgPool.Put(msg)
 	if e := json.NewDecoder(r.Body).Decode(msg); e != nil {
@@ -20,13 +20,13 @@ func (b *tgbot) Handle(w http.ResponseWriter, r *http.Request) {
 	pmsg := msg.(*Message)
 	b.Log(pmsg.GetMsgLog(), 0)
 	for i := 0; i < b.plugnum; i++ {
-		done, err := b.plugins[i].Handle(pmsg, w)
+		done, err := b.plugins[i].Handle(pmsg)
 		if err != nil {
 			b.Log(err, 1)
 		} else {
 			if done {
 				b.Log("Plugin: "+b.plugins[i].Name()+" handled the message "+pmsg.GetStrMsgID(), 0)
-				return
+				//return
 			}
 		}
 	}
