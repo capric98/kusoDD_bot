@@ -1,11 +1,13 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
 
 	jsoniter "github.com/json-iterator/go"
@@ -126,6 +128,11 @@ func (bot *tgbot) Run() {
 	}
 
 	srv.ListenAndServe()
+	defer srv.Shutdown(context.Background())
+	defer bot.CancelWebHook()
+	c := make(chan os.Signal, 2)
+	signal.Notify(c, os.Interrupt, os.Kill)
+	<-c
 }
 
 func (bot *tgbot) Log(body interface{}, level int) {
