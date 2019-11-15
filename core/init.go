@@ -2,6 +2,8 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -85,6 +87,9 @@ func (bot *tgbot) Run() {
 
 		switch r.Method {
 		case "POST":
+			body, _ := ioutil.ReadAll(r.Body)
+			fmt.Println("")
+			fmt.Println(string(body))
 		default:
 			http.Error(w, "Only support POST method.", http.StatusBadRequest)
 		}
