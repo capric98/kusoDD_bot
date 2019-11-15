@@ -2,8 +2,6 @@ package core
 
 import (
 	"context"
-	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -22,6 +20,8 @@ type tgbot struct {
 	hookPath   string
 	port       int
 	loglevel   int // -1:debug 0:normal 100:none
+	plugins    []Plugin
+	plugnum    int
 }
 
 type settings struct {
@@ -106,9 +106,7 @@ func (bot *tgbot) Run() {
 
 		switch r.Method {
 		case "POST":
-			body, _ := ioutil.ReadAll(r.Body)
-			fmt.Println("")
-			fmt.Println(string(body))
+			bot.Handle(w, r)
 		default:
 			http.Error(w, "Only support POST method.", http.StatusBadRequest)
 		}
