@@ -11,6 +11,7 @@ import (
 
 type tgbot struct {
 	client     *http.Client
+	apiUrl     string
 	hookSuffix string
 	hookPath   string
 	port       int
@@ -70,6 +71,14 @@ func Newbot(conf *string, loglevel *string) *tgbot {
 		}
 
 		// Validate success, make bot.
+		nb.client = &http.Client{}
+		nb.apiUrl = "https://api.telegram.org/bot" + config.Token + "/"
+		nb.port = config.Port
+		if nb.port < 1000 {
+			nb.Log("Port low than 1000.", 1)
+			return nil
+		}
+		return nb
 	} else {
 		nb.Log(err, 1)
 	}
@@ -95,6 +104,23 @@ func (bot *tgbot) Run() {
 		}
 	})
 	// stuck here
+
+	srv := &http.Server{
+		Addr:    "127.0.0.1:88",
+		Handler: mux,
+		//TLSConfig:    cfg,
+		//TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
+	}
+	//log.Fatal(srv.ListenAndServeTLS("tls.crt", "tls.key"))
+
+	if e := bot.SetWebHook(); e != nil {
+		bot.Log(e, 1)
+		return
+	}
+	defer bot.CancelWebHook()
+
+	srv.ListenAndServe()
+	fmt.Println("Finish")
 }
 
 func (bot *tgbot) Log(body interface{}, level int) {
