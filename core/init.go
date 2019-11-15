@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -78,6 +79,8 @@ func Newbot(conf *string, loglevel *string) *tgbot {
 		nb.client = &http.Client{}
 		nb.apiUrl = "https://api.telegram.org/bot" + config.Token + "/"
 		nb.port = config.Port
+		nb.hookSuffix = config.HookSuffix
+		nb.hookPath = config.HookPath
 		if nb.port < 1000 {
 			nb.Log("Port low than 1000.", 1)
 			return nil
@@ -110,7 +113,7 @@ func (bot *tgbot) Run() {
 	// stuck here
 
 	srv := &http.Server{
-		Addr:    "127.0.0.1:88",
+		Addr:    "127.0.0.1:" + strconv.Itoa(bot.port),
 		Handler: mux,
 		//TLSConfig:    cfg,
 		//TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
