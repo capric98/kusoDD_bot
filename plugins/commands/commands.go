@@ -1,20 +1,16 @@
 package commands
 
-type message interface {
-	GetCommands() (int, []string)
-}
-type tgbot interface {
-	SendText(interface{}, string, bool) error
-	Log(interface{}, int)
-}
+import (
+	. "github.com/capric98/kusoDD_bot/plugins"
+)
 
 type complug struct {
-	commands map[string](func(message, tgbot) error)
+	commands map[string](func(Message, Tgbot) error)
 }
 
 func (c *complug) Handle(m interface{}, b interface{}) {
-	msg := m.(message)
-	bot := b.(tgbot)
+	msg := m.(Message)
+	bot := b.(Tgbot)
 	clen, clist := msg.GetCommands()
 	bot.Log(clist, 0)
 	if clen != 0 {
@@ -35,7 +31,7 @@ func (c *complug) Name() string {
 
 func NewPlugin() *complug {
 	c := &complug{
-		commands: make(map[string](func(message, tgbot) error)),
+		commands: make(map[string](func(Message, Tgbot) error)),
 	}
 	c.commands["/info"] = printInfo
 	return c
