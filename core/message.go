@@ -45,6 +45,7 @@ type Message struct {
 		MediaGroupID    string      `json:"media_group_id"`
 		Audio           MsgAudio    `json:"audio"`
 		Video           MsgVideo    `json:"video"`
+		Sticker         MsgSticker  `json:"sticker"`
 		Animation       MsgAnime    `json:"animation"`
 		Entities        []MsgEntity `json:"entities"`
 		CaptionEntities []MsgEntity `json:"caption_entities"`
@@ -93,13 +94,20 @@ type MsgAnime struct {
 	MsgFile
 }
 
+type MsgSticker struct {
+	MsgFile
+	Emoji      string `json:"emoji"`
+	SetName    string `json:"set_name"`
+	IsAnimated bool   `json:"is_animated"`
+}
+
 func (msg *Message) GetStrMsgID() string {
 	return ""
 }
 
 func (msg *Message) GetMsgLog() (result string) {
-	defer func(){recover()}
-	
+	defer func() { recover() }()
+
 	result = msg.Message.From.UserName
 	switch {
 	case msg.Message.ForwardDate != 0:
@@ -111,6 +119,8 @@ func (msg *Message) GetMsgLog() (result string) {
 		}
 	case msg.Message.Text != "":
 		result += " says: " + msg.Message.Text
+	case msg.Message.Sticker.FileID != "":
+		result += " sends a sticker: " + msg.Message.Sticker.FileID
 	default:
 		if l := len(msg.Message.Entities) + len(msg.Message.CaptionEntities); l != 0 {
 			result += " AND contains " + strconv.Itoa(l) + " entites."
