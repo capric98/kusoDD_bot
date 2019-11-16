@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	info = `这是一个看到新功能就想往上加的臭DD bot\n查看帮助 /help`
+	info = "这是一个看到新功能就想往上加的臭DD bot\n查看帮助 /help"
 )
 
 func printInfo(msg Message, bot Tgbot) error {

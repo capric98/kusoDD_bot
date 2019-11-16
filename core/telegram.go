@@ -63,8 +63,8 @@ func NewMultipart(api string, k []string, v []string, ftype string, filename str
 			fmt.Sprintf(`form-data; name="%s"; filename="%s"`, ftype, filename))
 		p, _ := w.CreatePart(h)
 		_, _ = p.Write(data)
-		w.Close()
 	}
+	w.Close()
 	req, _ = http.NewRequest("POST", api, buf)
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
@@ -105,11 +105,11 @@ func (b *tgbot) CancelWebHook() error {
 	}
 }
 
-func (b *tgbot) SendChatAction(k []string, v []string) error {
+func (b *tgbot) simpleDo(fname string, k []string, v []string) error {
 	if len(k) != len(v) {
 		return ErrKVnotFit
 	}
-	req, ack := NewMultipart(apiUrl["SendChatAction"], k, v, "", "", nil)
+	req, ack := NewMultipart(apiUrl[fname], k, v, "", "", nil)
 	defer ack()
 
 	resp, e := b.client.Do(req)
@@ -124,23 +124,12 @@ func (b *tgbot) SendChatAction(k []string, v []string) error {
 	}
 }
 
+func (b *tgbot) SendChatAction(k []string, v []string) error {
+	return b.simpleDo("SendChatAction", k, v)
+}
+
 func (b *tgbot) SendMessage(k []string, v []string) error {
-	if len(k) != len(v) {
-		return ErrKVnotFit
-	}
-	req, ack := NewMultipart(apiUrl["SendMessage"], k, v, "", "", nil)
-	defer ack()
-
-	resp, e := b.client.Do(req)
-	if e != nil {
-		return e
-	}
-
-	if result := check(resp); result.Ok {
-		return nil
-	} else {
-		return errors.New("telegram: " + result.Description)
-	}
+	return b.simpleDo("SendMessage", k, v)
 }
 
 func toStr(n int64) string {
