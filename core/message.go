@@ -1,5 +1,7 @@
 package core
 
+import "strconv"
+
 type Message struct {
 	UpdateID int64 `json:"update_id"`
 	Message  struct {
@@ -107,6 +109,20 @@ func (msg *Message) GetMsgLog() (result string) {
 		}
 	case msg.Message.Text != "":
 		result += " says: " + msg.Message.Text
+	default:
+		if l := len(msg.Message.Entities) + len(msg.Message.CaptionEntities); l != 0 {
+			result += " AND contains " + strconv.Itoa(l) + " entites."
+			for _, v := range msg.Message.Entities {
+				if v.Type == "bot_command" {
+					result += " " + msg.Message.Text[v.Offset:v.Offset+v.Length]
+				}
+			}
+			for _, v := range msg.Message.CaptionEntities {
+				if v.Type == "bot_command" {
+					result += " " + msg.Message.Text[v.Offset:v.Offset+v.Length]
+				}
+			}
+		}
 	}
 
 	return
