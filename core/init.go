@@ -21,7 +21,6 @@ type tgbot struct {
 	port       int
 	loglevel   int // -1:debug 0:normal 100:none
 	plugins    []Plugin
-	plugnum    int
 }
 
 type settings struct {
