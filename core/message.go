@@ -1,7 +1,5 @@
 package core
 
-import "strconv"
-
 type Message struct {
 	UpdateID int64 `json:"update_id"`
 	Message  struct {
@@ -105,37 +103,42 @@ func (msg *Message) GetStrMsgID() string {
 	return ""
 }
 
-func (msg *Message) GetMsgLog() (result string) {
-	defer func() { recover() }()
+// func (msg *Message) GetMsgLog() (result string) {
+// 	defer func() { recover() }()
 
-	result = msg.Message.From.UserName
-	switch {
-	case msg.Message.ForwardDate != 0:
-		result += " forwards: "
-		if msg.Message.Text != "" {
-			result += msg.Message.Text
-		} else {
-			result += "something rather than plain text."
-		}
-	case msg.Message.Text != "":
-		result += " says: " + msg.Message.Text
-	case msg.Message.Sticker.FileID != "":
-		result += " sends a sticker: " + msg.Message.Sticker.FileID
-	default:
-		if l := len(msg.Message.Entities) + len(msg.Message.CaptionEntities); l != 0 {
-			result += " AND contains " + strconv.Itoa(l) + " entites."
-			for _, v := range msg.Message.Entities {
-				if v.Type == "bot_command" {
-					result += " " + msg.Message.Text[v.Offset:v.Offset+v.Length]
-				}
+// 	result = msg.Message.From.UserName
+// 	switch {
+// 	case msg.Message.ForwardDate != 0:
+// 		result += " forwards: "
+// 		if msg.Message.Text != "" {
+// 			result += msg.Message.Text
+// 		} else {
+// 			result += "something rather than plain text."
+// 		}
+// 	case msg.Message.Text != "":
+// 		result += " says: " + msg.Message.Text
+// 	case msg.Message.Sticker.FileID != "":
+// 		result += " sends a sticker: " + msg.Message.Sticker.FileID
+// 	}
+
+// 	return
+// }
+
+func (msg *Message) GetCommands() (int, []string) {
+	if l := len(msg.Message.Entities) + len(msg.Message.CaptionEntities); l != 0 {
+		commands := []string{}
+		for _, v := range msg.Message.Entities {
+			if v.Type == "bot_command" {
+				commands = append(commands, msg.Message.Text[v.Offset:v.Offset+v.Length])
 			}
-			for _, v := range msg.Message.CaptionEntities {
-				if v.Type == "bot_command" {
-					result += " " + msg.Message.Caption[v.Offset:v.Offset+v.Length]
-				}
+		}
+		for _, v := range msg.Message.CaptionEntities {
+			if v.Type == "bot_command" {
+				commands = append(commands, msg.Message.Caption[v.Offset:v.Offset+v.Length])
 			}
 		}
+		return len(commands), commands
+	} else {
+		return 0, nil
 	}
-
-	return
 }

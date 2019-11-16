@@ -1,5 +1,14 @@
 package core
 
+import "strconv"
+
+type Tgbot interface {
+	SetWebHook() error
+	CancelWebHook() error
+	SendChatAction(interface{}, interface{}) error
+	SendText(interface{}, string, bool) error
+}
+
 func (b *tgbot) SetWebHook() error {
 	resp, err := b.client.Get(b.apiUrl + "setWebhook?url=" + b.hookSuffix + b.hookPath)
 	b.Log("Set webhook.", 0)
@@ -18,4 +27,32 @@ func (b *tgbot) CancelWebHook() error {
 	}
 	resp.Body.Close()
 	return nil
+}
+
+func (b *tgbot) SendChatAction(msg *Message, action string) error {
+	resp, e := b.client.Get(b.apiUrl + "sendChatAction?chat_id=" + toStr(msg.Message.Chat.ID) + "&action=" + action)
+	if e != nil {
+		return e
+	}
+	resp.Body.Close()
+	return nil
+}
+
+func (b *tgbot) SendText(m interface{}, text string, reply bool) error {
+	msg := m.(*Message)
+	furl := b.apiUrl + "sendmessage?chat_id=" + toStr(msg.Message.Chat.ID) + "&text=" + text
+	if reply {
+		furl += "&reply_to_message_id=" + toStr(msg.Message.MessageID)
+	}
+
+	resp, e := b.client.Get(furl)
+	if e != nil {
+		return e
+	}
+	resp.Body.Close()
+	return nil
+}
+
+func toStr(n int64) string {
+	return strconv.FormatInt(n, 10)
 }
