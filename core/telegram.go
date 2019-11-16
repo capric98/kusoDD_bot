@@ -33,6 +33,7 @@ var (
 	bytePool = sync.Pool{
 		New: func() interface{} { return new(bytes.Buffer) },
 	}
+	ErrKVnotFit = errors.New("telegram: k and v have different length.")
 )
 
 func (b *tgbot) Init() {
@@ -46,7 +47,6 @@ func NewMultipart(api string, k []string, v []string, ftype string, filename str
 	buf := (bytePool.Get()).(*bytes.Buffer)
 	w := multipart.NewWriter(buf)
 
-	defer req.Header.Set("Content-Type", w.FormDataContentType())
 	ack = func() {
 		buf.Truncate(0)
 		bytePool.Put(buf)
@@ -65,6 +65,7 @@ func NewMultipart(api string, k []string, v []string, ftype string, filename str
 		w.Close()
 		req, _ = http.NewRequest("POST", api, buf)
 	}
+	req.Header.Set("Content-Type", w.FormDataContentType())
 
 	return
 }
@@ -104,6 +105,9 @@ func (b *tgbot) CancelWebHook() error {
 }
 
 func (b *tgbot) SendChatAction(k []string, v []string) error {
+	if len(k) != len(v) {
+		return ErrKVnotFit
+	}
 	req, ack := NewMultipart(apiUrl["SendChatAction"], k, v, "", "", nil)
 	defer ack()
 
@@ -120,6 +124,9 @@ func (b *tgbot) SendChatAction(k []string, v []string) error {
 }
 
 func (b *tgbot) SendText(k []string, v []string) error {
+	if len(k) != len(v) {
+		return ErrKVnotFit
+	}
 	req, ack := NewMultipart(apiUrl["SendText"], k, v, "", "", nil)
 	defer ack()
 
