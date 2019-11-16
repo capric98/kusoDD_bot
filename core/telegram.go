@@ -63,8 +63,8 @@ func NewMultipart(api string, k []string, v []string, ftype string, filename str
 		p, _ := w.CreatePart(h)
 		_, _ = p.Write(data)
 		w.Close()
-		req, _ = http.NewRequest("POST", api, buf)
 	}
+	req, _ = http.NewRequest("POST", api, buf)
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
 	return
