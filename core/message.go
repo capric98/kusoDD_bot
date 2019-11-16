@@ -95,6 +95,19 @@ func (msg *Message) GetStrMsgID() string {
 	return ""
 }
 
-func (msg *Message) GetMsgLog() string {
-	return msg.Message.Text
+func (msg *Message) GetMsgLog() (result string) {
+	result = msg.Message.From.UserName
+	switch {
+	case msg.Message.ForwardDate != 0:
+		result += " forwards: "
+		if msg.Message.Text != "" {
+			result += msg.Message.Text
+		} else {
+			result += "something rather than plain text."
+		}
+	case msg.Message.Text != "":
+		result += " says: " + msg.Message.Text
+	}
+
+	return
 }
