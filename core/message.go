@@ -98,6 +98,8 @@ func (msg *Message) GetStrMsgID() string {
 }
 
 func (msg *Message) GetMsgLog() (result string) {
+	defer func(){recover()}
+	
 	result = msg.Message.From.UserName
 	switch {
 	case msg.Message.ForwardDate != 0:
@@ -119,7 +121,7 @@ func (msg *Message) GetMsgLog() (result string) {
 			}
 			for _, v := range msg.Message.CaptionEntities {
 				if v.Type == "bot_command" {
-					result += " " + msg.Message.Text[v.Offset:v.Offset+v.Length]
+					result += " " + msg.Message.Caption[v.Offset:v.Offset+v.Length]
 				}
 			}
 		}
