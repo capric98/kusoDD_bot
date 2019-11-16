@@ -1,8 +1,11 @@
 package core
 
+import "strconv"
+
 type MessageIf interface {
 	GetCommands() (int, []string)
 	GetFromUserName() string
+	GetChatIDStr() string
 }
 
 type Message struct {
@@ -148,4 +151,8 @@ func (msg *Message) GetCommands() (int, []string) {
 	} else {
 		return 0, nil
 	}
+}
+
+func (msg *Message) GetChatIDStr() string {
+	return strconv.FormatInt(msg.Message.Chat.ID, 10)
 }

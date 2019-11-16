@@ -34,5 +34,6 @@ func NewPlugin() *complug {
 		commands: make(map[string](func(Message, Tgbot) error)),
 	}
 	c.commands["/info"] = printInfo
+	c.commands["/help"] = printHelp
 	return c
 }

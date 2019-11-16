@@ -4,6 +4,12 @@ import (
 	. "github.com/capric98/kusoDD_bot/plugins"
 )
 
+var (
+	info = `这是一个看到新功能就想往上加的臭DD bot\n查看帮助 /help`
+)
+
 func printInfo(msg Message, bot Tgbot) error {
-	return bot.SendText(msg, "这是一个看到新功能就想往上加的臭DD bot\n查看帮助 /help", false)
+	k := []string{"chat_id", "text"}
+	v := []string{msg.GetChatIDStr(), info}
+	return bot.SendText(k, v)
 }

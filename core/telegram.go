@@ -1,9 +1,14 @@
 package core
 
 import (
+	"bytes"
 	"errors"
-	"net/url"
+	"fmt"
+	"mime/multipart"
+	"net/http"
+	"net/textproto"
 	"strconv"
+	"sync"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -13,8 +18,8 @@ var json = jsoniter.ConfigCompatibleWithStandardLibrary
 type Tgbot interface {
 	SetWebHook() error
 	CancelWebHook() error
-	SendChatAction(interface{}, interface{}) error
-	SendText(interface{}, string, bool) error
+	SendChatAction([]string, []string) error
+	SendText([]string, []string) error
 }
 
 type tgresp struct {
@@ -23,77 +28,111 @@ type tgresp struct {
 	Result      MsgType `json:"result"`
 }
 
+var (
+	apiUrl   = make(map[string]string)
+	bytePool = sync.Pool{
+		New: func() interface{} { return new(bytes.Buffer) },
+	}
+)
+
+func (b *tgbot) Init() {
+	prefix := "https://api.telegram.org/bot" + b.token + "/"
+	apiUrl["SetWebHook"] = prefix + "setWebhook?url=" + b.hookSuffix + b.hookPath
+	apiUrl["CancelWebHook"] = prefix + "deleteWebhook"
+	apiUrl["SendChatAction"] = prefix + "sendChatAction"
+}
+
+func NewMultipart(api string, k []string, v []string, ftype string, filename string, data []byte) (req *http.Request, ack func()) {
+	buf := (bytePool.Get()).(*bytes.Buffer)
+	w := multipart.NewWriter(buf)
+
+	defer req.Header.Set("Content-Type", w.FormDataContentType())
+	ack = func() {
+		buf.Truncate(0)
+		bytePool.Put(buf)
+	}
+
+	for i := range k {
+		_ = w.WriteField(k[i], v[i])
+	}
+
+	if ftype != "" {
+		h := make(textproto.MIMEHeader)
+		h.Set("Content-Disposition",
+			fmt.Sprintf(`form-data; name="%s"; filename="%s"`, ftype, filename))
+		p, _ := w.CreatePart(h)
+		_, _ = p.Write(data)
+		w.Close()
+		req, _ = http.NewRequest("POST", api, buf)
+	}
+
+	return
+}
+
+func check(resp *http.Response) (result tgresp) {
+	_ = json.NewDecoder(resp.Body).Decode(&result)
+	resp.Body.Close()
+	return result
+}
+
 func (b *tgbot) SetWebHook() error {
-	resp, err := b.client.Get(b.apiUrl + "setWebhook?url=" + b.hookSuffix + b.hookPath)
+	resp, err := b.client.Get(apiUrl["SetWebHook"])
 	b.Log("Set webhook.", 0)
 	if err != nil {
 		return err
 	}
 
-	var result tgresp
-	_ = json.NewDecoder(resp.Body).Decode(&result)
-	resp.Body.Close()
-	if !result.Ok {
+	if result := check(resp); result.Ok {
+		return nil
+	} else {
 		return errors.New("telegram: " + result.Description)
 	}
-
-	return nil
 }
 
 func (b *tgbot) CancelWebHook() error {
-	resp, err := b.client.Get(b.apiUrl + "deleteWebhook")
+	resp, err := b.client.Get(apiUrl["CancelWebHook"])
 	b.Log("Delete webhook.", 0)
 	if err != nil {
 		return err
 	}
 
-	var result tgresp
-	_ = json.NewDecoder(resp.Body).Decode(&result)
-	resp.Body.Close()
-	if !result.Ok {
+	if result := check(resp); result.Ok {
+		return nil
+	} else {
 		return errors.New("telegram: " + result.Description)
 	}
-
-	return nil
 }
 
-func (b *tgbot) SendChatAction(msg *Message, action string) error {
-	resp, e := b.client.Get(b.apiUrl + "sendChatAction?chat_id=" + toStr(msg.Message.Chat.ID) + "&action=" + action)
+func (b *tgbot) SendChatAction(k []string, v []string) error {
+	req, ack := NewMultipart(apiUrl["SendChatAction"], k, v, "", "", nil)
+	defer ack()
+
+	resp, e := b.client.Do(req)
 	if e != nil {
 		return e
 	}
 
-	var result tgresp
-	_ = json.NewDecoder(resp.Body).Decode(&result)
-	resp.Body.Close()
-	if !result.Ok {
+	if result := check(resp); result.Ok {
+		return nil
+	} else {
 		return errors.New("telegram: " + result.Description)
 	}
-
-	return nil
 }
 
-func (b *tgbot) SendText(m interface{}, text string, reply bool) error {
-	msg := m.(*Message)
-	furl := b.apiUrl + "sendmessage?chat_id=" + toStr(msg.Message.Chat.ID) + "&text=" + url.QueryEscape(text)
-	if reply {
-		furl += "&reply_to_message_id=" + toStr(msg.Message.MessageID)
-	}
+func (b *tgbot) SendText(k []string, v []string) error {
+	req, ack := NewMultipart(apiUrl["SendText"], k, v, "", "", nil)
+	defer ack()
 
-	resp, e := b.client.Get(furl)
-	//b.Log(furl, 0)
+	resp, e := b.client.Do(req)
 	if e != nil {
 		return e
 	}
 
-	var result tgresp
-	_ = json.NewDecoder(resp.Body).Decode(&result)
-	resp.Body.Close()
-	if !result.Ok {
+	if result := check(resp); result.Ok {
+		return nil
+	} else {
 		return errors.New("telegram: " + result.Description)
 	}
-
-	return nil
 }
 
 func toStr(n int64) string {

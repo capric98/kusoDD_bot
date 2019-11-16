@@ -11,7 +11,7 @@ import (
 
 type tgbot struct {
 	client     *http.Client
-	apiUrl     string
+	token      string
 	hookSuffix string
 	hookPath   string
 	port       int
@@ -73,7 +73,7 @@ func Newbot(conf *string, loglevel *string) *tgbot {
 
 		// Validate success, make bot.
 		nb.client = &http.Client{}
-		nb.apiUrl = "https://api.telegram.org/bot" + config.Token + "/"
+		nb.token = config.Token
 		nb.port = config.Port
 		nb.hookSuffix = config.HookSuffix
 		nb.hookPath = config.HookPath
@@ -81,6 +81,7 @@ func Newbot(conf *string, loglevel *string) *tgbot {
 			nb.Log("Port low than 1000.", 1)
 			return nil
 		}
+		nb.Init()
 		nb.RegisterPlugins(config)
 		return nb
 	} else {
