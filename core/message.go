@@ -6,53 +6,55 @@ type MessageIf interface {
 }
 
 type Message struct {
-	UpdateID int64 `json:"update_id"`
-	Message  struct {
-		MessageID int64  `json:"message_id"`
-		Text      string `json:"text"`
-		Caption   string `json:"Caption"`
-		From      struct {
-			ID        int64  `json:"id"`
-			IsBot     bool   `json:"is_bot"`
-			FirstName string `json:"first_name"`
-			LastName  string `json:"last_name"`
-			UserName  string `json:"username"`
-			LangCode  string `json:"language_code"`
-		} `json:"from"`
-		Chat struct {
-			ID        int64  `json:"id"`
-			FirstName string `json:"first_name"`
-			LastName  string `json:"last_name"`
-			UserName  string `json:"username"`
-			Type      string `json:"type"`
-		} `json:"chat"`
-		ForwardFrom struct {
-			ID        int64  `json:"id"`
-			IsBot     bool   `json:"is_bot"`
-			FirstName string `json:"first_name"`
-			UserName  string `json:"username"`
-		} `json:"forward_from"`
-		ForwardFromChat struct {
-			ID       int64  `json:"id"`
-			Title    string `json:"title"`
-			UserName string `json:"username"`
-			Type     string `json:"channel"`
-		} `json:"forward_from_chat"`
+	UpdateID int64   `json:"update_id"`
+	Message  MsgType `json:"message"`
+}
 
-		Date          int64  `json:"date"`
-		ForwardSender string `json:"forward_sender_name"`
-		ForwardMsgID  int64  `json:"forward_from_message_id"`
-		ForwardDate   int64  `json:"forward_date"`
+type MsgType struct {
+	MessageID int64  `json:"message_id"`
+	Text      string `json:"text"`
+	Caption   string `json:"Caption"`
+	From      struct {
+		ID        int64  `json:"id"`
+		IsBot     bool   `json:"is_bot"`
+		FirstName string `json:"first_name"`
+		LastName  string `json:"last_name"`
+		UserName  string `json:"username"`
+		LangCode  string `json:"language_code"`
+	} `json:"from"`
+	Chat struct {
+		ID        int64  `json:"id"`
+		FirstName string `json:"first_name"`
+		LastName  string `json:"last_name"`
+		UserName  string `json:"username"`
+		Type      string `json:"type"`
+	} `json:"chat"`
+	ForwardFrom struct {
+		ID        int64  `json:"id"`
+		IsBot     bool   `json:"is_bot"`
+		FirstName string `json:"first_name"`
+		UserName  string `json:"username"`
+	} `json:"forward_from"`
+	ForwardFromChat struct {
+		ID       int64  `json:"id"`
+		Title    string `json:"title"`
+		UserName string `json:"username"`
+		Type     string `json:"channel"`
+	} `json:"forward_from_chat"`
 
-		Photo           []MsgPhoto  `json:"photo"`
-		MediaGroupID    string      `json:"media_group_id"`
-		Audio           MsgAudio    `json:"audio"`
-		Video           MsgVideo    `json:"video"`
-		Sticker         MsgSticker  `json:"sticker"`
-		Animation       MsgAnime    `json:"animation"`
-		Entities        []MsgEntity `json:"entities"`
-		CaptionEntities []MsgEntity `json:"caption_entities"`
-	} `json:"message"`
+	Date          int64  `json:"date"`
+	ForwardSender string `json:"forward_sender_name"`
+	ForwardMsgID  int64  `json:"forward_from_message_id"`
+	ForwardDate   int64  `json:"forward_date"`
+
+	Photo           []MsgPhoto  `json:"photo"`
+	MediaGroupID    string      `json:"media_group_id"`
+	Audio           MsgAudio    `json:"audio"`
+	Video           MsgVideo    `json:"video"`
+	Sticker         MsgSticker  `json:"sticker"`
+	Animation       MsgAnime    `json:"animation"`
+	Entities        []MsgEntity `json:"entities"`
+	CaptionEntities []MsgEntity `json:"caption_entities"`
 }
 
 type MsgPhoto struct {

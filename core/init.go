@@ -7,11 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
-
-	jsoniter "github.com/json-iterator/go"
 )
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type tgbot struct {
 	client     *http.Client
