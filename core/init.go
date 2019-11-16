@@ -86,6 +86,7 @@ func Newbot(conf *string, loglevel *string) *tgbot {
 			nb.Log("Port low than 1000.", 1)
 			return nil
 		}
+		nb.RegisterPlugins(config)
 		return nb
 	} else {
 		nb.Log(err, 1)

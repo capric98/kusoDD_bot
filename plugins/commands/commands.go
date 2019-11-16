@@ -16,6 +16,7 @@ func (c *complug) Handle(m interface{}, b interface{}) {
 	msg := m.(message)
 	bot := b.(tgbot)
 	clen, clist := msg.GetCommands()
+	bot.Log(clist, 0)
 	if clen != 0 {
 		for _, v := range clist {
 			if c.commands[v] != nil {
@@ -33,7 +34,9 @@ func (c *complug) Name() string {
 }
 
 func NewPlugin() *complug {
-	c := &complug{}
+	c := &complug{
+		commands: make(map[string](func(message, tgbot) error)),
+	}
 	c.commands["/info"] = printInfo
 	return c
 }

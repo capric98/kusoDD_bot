@@ -46,6 +46,7 @@ func (b *tgbot) SendText(m interface{}, text string, reply bool) error {
 	}
 
 	resp, e := b.client.Get(furl)
+	b.Log(furl, 0)
 	if e != nil {
 		return e
 	}
