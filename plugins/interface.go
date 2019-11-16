@@ -9,6 +9,6 @@ type Tgbot interface {
 	SetWebHook() error
 	CancelWebHook() error
 	SendChatAction([]string, []string) error
-	SendText([]string, []string) error
+	SendMessage([]string, []string) error
 	Log(interface{}, int)
 }

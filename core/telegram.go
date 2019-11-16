@@ -19,7 +19,7 @@ type Tgbot interface {
 	SetWebHook() error
 	CancelWebHook() error
 	SendChatAction([]string, []string) error
-	SendText([]string, []string) error
+	SendMessage([]string, []string) error
 }
 
 type tgresp struct {
@@ -41,6 +41,7 @@ func (b *tgbot) Init() {
 	apiUrl["SetWebHook"] = prefix + "setWebhook?url=" + b.hookSuffix + b.hookPath
 	apiUrl["CancelWebHook"] = prefix + "deleteWebhook"
 	apiUrl["SendChatAction"] = prefix + "sendChatAction"
+	apiUrl["SendMessage"] = prefix + "sendmessage"
 }
 
 func NewMultipart(api string, k []string, v []string, ftype string, filename string, data []byte) (req *http.Request, ack func()) {
@@ -123,11 +124,11 @@ func (b *tgbot) SendChatAction(k []string, v []string) error {
 	}
 }
 
-func (b *tgbot) SendText(k []string, v []string) error {
+func (b *tgbot) SendMessage(k []string, v []string) error {
 	if len(k) != len(v) {
 		return ErrKVnotFit
 	}
-	req, ack := NewMultipart(apiUrl["SendText"], k, v, "", "", nil)
+	req, ack := NewMultipart(apiUrl["SendMessage"], k, v, "", "", nil)
 	defer ack()
 
 	resp, e := b.client.Do(req)

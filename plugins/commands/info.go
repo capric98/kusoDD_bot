@@ -11,5 +11,5 @@ var (
 func printInfo(msg Message, bot Tgbot) error {
 	k := []string{"chat_id", "text"}
 	v := []string{msg.GetChatIDStr(), info}
-	return bot.SendText(k, v)
+	return bot.SendMessage(k, v)
 }

@@ -14,5 +14,5 @@ by **[capric98](https://github.com/capric98)**
 func printHelp(msg Message, bot Tgbot) error {
 	k := []string{"chat_id", "text"}
 	v := []string{msg.GetChatIDStr(), helpText}
-	return bot.SendText(k, v)
+	return bot.SendMessage(k, v)
 }
