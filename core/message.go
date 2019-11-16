@@ -109,10 +109,6 @@ type MsgSticker struct {
 	IsAnimated bool   `json:"is_animated"`
 }
 
-func (msg *Message) GetStrMsgID() string {
-	return ""
-}
-
 // func (msg *Message) GetMsgLog() (result string) {
 // 	defer func() { recover() }()
 
@@ -155,4 +151,8 @@ func (msg *Message) GetCommands() (int, []string) {
 
 func (msg *Message) GetChatIDStr() string {
 	return strconv.FormatInt(msg.Message.Chat.ID, 10)
+}
+
+func (msg *Message) GetFromUserName() string {
+	return msg.Message.From.UserName
 }
