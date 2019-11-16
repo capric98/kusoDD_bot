@@ -1,5 +1,10 @@
 package core
 
+type MessageIf interface {
+	GetCommands() (int, []string)
+	GetFromUserName() string
+}
+
 type Message struct {
 	UpdateID int64 `json:"update_id"`
 	Message  struct {
