@@ -1,6 +1,9 @@
 package core
 
-import "strconv"
+import (
+	"net/url"
+	"strconv"
+)
 
 type Tgbot interface {
 	SetWebHook() error
@@ -40,7 +43,7 @@ func (b *tgbot) SendChatAction(msg *Message, action string) error {
 
 func (b *tgbot) SendText(m interface{}, text string, reply bool) error {
 	msg := m.(*Message)
-	furl := b.apiUrl + "sendmessage?chat_id=" + toStr(msg.Message.Chat.ID) + "&text=" + text
+	furl := b.apiUrl + "sendmessage?chat_id=" + toStr(msg.Message.Chat.ID) + "&text=" + url.QueryEscape(text)
 	if reply {
 		furl += "&reply_to_message_id=" + toStr(msg.Message.MessageID)
 	}
