@@ -4,8 +4,8 @@ import (
 	. "github.com/capric98/kusoDD_bot/plugins"
 )
 
-var helpText = `**kusoDD_bot v0.1.0**
-by **[capric98](https://github.com/capric98)**
+var helpText = `*kusoDD_bot v0.1.0*
+by *[capric98](https://github.com/capric98)*
 
 /info bot信息
 /help 输出当前内容
