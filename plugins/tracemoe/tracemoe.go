@@ -58,8 +58,9 @@ var (
 )
 
 func New(b interface{}) func(interface{}, interface{}) error {
-	conf := b.(tgbot).GetConfig("sauceNAO")
+	conf := b.(tgbot).GetConfig("tracemoe")
 	prefix += conf["token"].(string) + "&url="
+	b.(tgbot).Log("tracemoe: set prefix -> "+prefix, 0)
 	return Handle
 }
 
