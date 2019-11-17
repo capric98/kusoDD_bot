@@ -1,9 +1,10 @@
-package commands
+package plugins
 
 import (
-	. "github.com/capric98/kusoDD_bot/plugins"
 	"net/http"
 	"time"
+
+	"github.com/capric98/plugins/getsticker"
 )
 
 type complug struct {
@@ -37,12 +38,12 @@ func (c *complug) Name() string {
 	return "commands"
 }
 
-func NewPlugin() *complug {
+func RegisterPlugins() *complug {
 	c := &complug{
 		commands: make(map[string](func(Message, Tgbot) error)),
 	}
 	c.commands["/info"] = printInfo
 	c.commands["/help"] = printHelp
-	c.commands["/getsticker"] = sendStickerFile
+	c.commands["/getsticker"] = getsticker.Handle()
 	return c
 }

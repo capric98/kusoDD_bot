@@ -42,6 +42,9 @@ func (b *tgbot) Init() {
 	apiUrl["SendChatAction"] = prefix + "sendChatAction"
 	apiUrl["SendMessage"] = prefix + "sendmessage"
 	apiUrl["SendDocument"] = prefix + "sendDocument"
+	apiUrl["SendAudio"] = prefix + "sendAudio"
+	apiUrl["SendVideo"] = prefix + "sendVideo"
+	apiUrl["SendPhoto "] = prefix + "sendPhoto"
 	apiUrl["GetFile"] = prefix + "getFile"
 }
 

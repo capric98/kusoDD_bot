@@ -1,20 +1,25 @@
-package commands
+package getsticker
 
 import (
 	"bytes"
 	"errors"
 	"image/png"
+	"net/http"
+	"time"
 
 	. "github.com/capric98/kusoDD_bot/plugins"
 	"golang.org/x/image/webp"
 )
 
 var (
+	client = &http.Client{
+		Timeout: 10 * time.Second,
+	}
 	ErrNoSticker     = errors.New("commands: No sticker in the message.")
 	ErrEmptyResponse = errors.New("commands: getFile call returns an empty response.")
 )
 
-func sendStickerFile(msg Message, bot Tgbot) error {
+func Handle(msg Message, bot Tgbot) error {
 	ID := msg.GetReplyToStickerFileID()
 	paras := map[string]string{
 		"chat_id":             msg.GetChatIDStr(),

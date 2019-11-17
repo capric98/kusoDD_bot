@@ -1,15 +1,14 @@
-package commands
+package plugins
 
-import (
-	. "github.com/capric98/kusoDD_bot/plugins"
-)
-
-var helpText = `*kusoDD_bot v0.1.0*
+var (
+	info     = "这是一个看到新功能就想往上加的臭DD bot\n查看帮助 /help"
+	helpText = `*kusoDD_bot v0.1.0*
 by [capric98](https://github.com/capric98)
 
 /info bot信息
 /help 输出当前内容
 /getsticker 获取一张sticker`
+)
 
 func printHelp(msg Message, bot Tgbot) error {
 	return bot.SendMessage(map[string]string{
@@ -18,5 +17,12 @@ func printHelp(msg Message, bot Tgbot) error {
 		"text":       helpText,
 
 		"disable_web_page_preview": "true",
+	})
+}
+
+func printInfo(msg Message, bot Tgbot) error {
+	return bot.SendMessage(map[string]string{
+		"chat_id": msg.GetChatIDStr(),
+		"text":    info,
 	})
 }
