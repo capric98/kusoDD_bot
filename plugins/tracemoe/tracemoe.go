@@ -88,6 +88,7 @@ func handle(msg message, bot tgbot) error {
 	bot.Log("tracemoe: pic url -> "+u, 0)
 	resp, err := client.Get(prefix + url.QueryEscape(u))
 	if err != nil {
+		bot.Log("tracemoe: Making request failed.", 0)
 		return err
 	}
 
@@ -95,6 +96,7 @@ func handle(msg message, bot tgbot) error {
 	err = json.NewDecoder(resp.Body).Decode(&tresp)
 	resp.Body.Close()
 	if err != nil {
+		bot.Log("tracemoe: Json decode failed.", 0)
 		return err
 	}
 
