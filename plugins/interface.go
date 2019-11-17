@@ -6,6 +6,7 @@ type Message interface {
 	GetChatIDStr() string
 	GetPhotoFileID() string
 	GetStickerFileID() string
+	GetReplyToStickerFileID() string
 }
 type Tgbot interface {
 	SetWebHook() error
