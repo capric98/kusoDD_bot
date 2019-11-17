@@ -141,8 +141,9 @@ func handle(msg message, bot tgbot) error {
 		paras["caption"] = "*Similarity:* `" + strconv.FormatFloat(doc0.Similarity*100, 'f', 2, 64) +
 			"`\n*タイトル:* `" + doc0.Title + "`\n*Title:* `" + doc0.TitleRomaji +
 			"`\n*From* `" + strconv.FormatFloat(doc0.From, 'f', 2, 64) + "s` *to* `" +
-			strconv.FormatFloat(doc0.To, 'f', 2, 64) + "s`" +
-			"\n*File:* `" + doc0.Filename + "`"
+			"\n*File:* `" + doc0.Filename + "`\n" +
+			strconv.FormatFloat(doc0.To, 'f', 2, 64) + "s`"
+
 		_ = bot.SendAnimation(paras, "", nil)
 		return nil
 	} else {
