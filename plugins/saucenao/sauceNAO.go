@@ -1,6 +1,13 @@
 package saucenao
 
-import "errors"
+import (
+	"errors"
+	jsoniter "github.com/json-iterator/go"
+	"net/http"
+	"time"
+)
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type tgbot interface {
 	GetFile(map[string]string) string
@@ -14,17 +21,39 @@ type message interface {
 	GetChatIDStr() string
 	GetPhotoFileID() string
 	GetReplyToPhotoFileID() string
+	GetReplyMsgIDStr() string
 }
 
+type saucenaoresp struct {
+	Header struct {
+		UserID     string `json:"user_id"`
+		ShortLimit string `json:"short_limit"`
+		LongLimit  string `json:"long_limit"`
+	} `json:"header"`
+	Results []struct {
+		Header struct {
+			Similarity string `json:"similarity"`
+			Thumbnail  string `json:"thumbnail"`
+		} `json:"header"`
+		Data struct {
+			ExtUrls []string `json:"ext_urls"`
+			Title   string   `json:"title"`
+			Author  string   `json:"author_name"`
+		} `json:"data"`
+	} `json:"results"`
+} //simple
+
 var (
+	client = &http.Client{
+		Timeout: 10 * time.Second,
+	}
+	prefix     = "https://saucenao.com/search.php?db=999&output_type=2&numres=1"
 	ErrNoPhoto = errors.New("saucenao: No photo in this message.")
 )
 
 func New(b interface{}) func(interface{}, interface{}) error {
 	conf := b.(tgbot).GetConfig("sauceNAO")
-	for k, v := range conf {
-		b.(tgbot).Log("sauceNAO: "+k+v.(string), 0)
-	}
+	prefix += "&api_key=" + conf["key"].(string) + "&url="
 	return Handle
 }
 
@@ -41,6 +70,22 @@ func handle(msg message, bot tgbot) error {
 		}
 	}
 	u := bot.GetFile(map[string]string{"file_id": ID})
-	u = u + " "
-	return nil
+	resp, err := client.Get(u)
+	if err != nil {
+		return err
+	}
+
+	var sresp saucenaoresp
+	err = json.NewDecoder(resp.Body).Decode(&sresp)
+	resp.Body.Close()
+	if err != nil {
+		return err
+	}
+
+	var paras map[string]string
+	paras["reply_to_message_id"] = msg.GetReplyMsgIDStr()
+	paras["chat_id"] = msg.GetChatIDStr()
+	paras["text"] = "author: " + sresp.Results[0].Data.Author + "\nSimilarity:" + sresp.Results[0].Header.Similarity
+
+	return bot.SendMessage(paras)
 }
