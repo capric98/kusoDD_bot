@@ -138,10 +138,11 @@ func handle(msg message, bot tgbot) error {
 			strconv.FormatFloat(doc0.At, 'f', 2, 64) + "&token=" + doc0.TokenThumb + "&mute"
 
 		paras["animation"] = mediaUrl
-		paras["caption"] = "Similarity: " + strconv.FormatFloat(doc0.At*100, 'f', 2, 64) +
-			"\nTitle: " + doc0.Title + "\nタイトル: " + doc0.TitleRomaji +
-			"\nFrom " + strconv.FormatFloat(doc0.From, 'f', 2, 64) + "s to " +
-			strconv.FormatFloat(doc0.To, 'f', 2, 64) + "s"
+		paras["caption"] = "*Similarity:* " + strconv.FormatFloat(doc0.Similarity*100, 'f', 2, 64) +
+			"\n*タイトル:* " + doc0.Title + "\n*Title:* " + doc0.TitleRomaji +
+			"\n*From* `" + strconv.FormatFloat(doc0.From, 'f', 2, 64) + "s` *to* `" +
+			strconv.FormatFloat(doc0.To, 'f', 2, 64) + "s`" +
+			"\n*Filename:* " + doc0.Filename
 		_ = bot.SendAnimation(paras, "", nil)
 		return nil
 	} else {
