@@ -87,8 +87,10 @@ func handle(msg message, bot tgbot) error {
 	paras := map[string]string{
 		"reply_to_message_id": msg.GetReplyMsgIDStr(),
 		"chat_id":             msg.GetChatIDStr(),
+		"parse_mode":          "Markdown",
 	}
-	paras["text"] = "author: " + sresp.Results[0].Data.Author + "\nSimilarity:" + sresp.Results[0].Header.Similarity
+	paras["text"] = "Title: [" + sresp.Results[0].Data.Author + "](" +
+		sresp.Results[0].Data.ExtUrls[0] + ")\nSimilarity:" + sresp.Results[0].Header.Similarity
 
 	return bot.SendMessage(paras)
 }
