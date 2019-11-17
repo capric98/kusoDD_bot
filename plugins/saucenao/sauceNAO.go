@@ -70,6 +70,11 @@ func Handle(m interface{}, b interface{}) error {
 func handle(msg message, bot tgbot) error {
 	ID := msg.GetPhotoFileID()
 	paras := map[string]string{
+		// 1. A send Photo, B reply it with /whatpic
+		//    -> bot will reply to A message
+		// 2. B send photo with caption /whatpic
+		//    -> bot will send message directly
+		//    (reply_to_message_id == "")
 		"reply_to_message_id": msg.GetReplyMsgIDStr(),
 		"chat_id":             msg.GetChatIDStr(),
 		"parse_mode":          "Markdown",

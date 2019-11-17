@@ -77,7 +77,7 @@ func Handle(m interface{}, b interface{}) error {
 func handle(msg message, bot tgbot) error {
 	ID := msg.GetPhotoFileID()
 	paras := map[string]string{
-		"reply_to_message_id": msg.GetReplyMsgIDStr(),
+		"reply_to_message_id": msg.GetMsgIDStr(),
 		"chat_id":             msg.GetChatIDStr(),
 		"parse_mode":          "Markdown",
 	}
@@ -135,16 +135,16 @@ func handle(msg message, bot tgbot) error {
 		doc0 := tresp.Docs[0]
 		mediaUrl := "https://media.trace.moe/video/" + strconv.Itoa(doc0.AnilistID) +
 			"/" + url.PathEscape(doc0.Filename) + "?t=" +
-			strconv.FormatFloat(doc0.At, 'f', 2, 64) + "&token=" + doc0.TokenThumb + "&mute"
+			strconv.FormatFloat(doc0.At, 'f', -1, 64) + "&token=" + doc0.TokenThumb + "&mute"
 
 		bot.Log(mediaUrl, 0)
 
 		paras["animation"] = mediaUrl
-		paras["caption"] = "*Similarity:* `" + strconv.FormatFloat(doc0.Similarity*100, 'f', 2, 64) +
+		paras["caption"] = "*Similarity:* `" + strconv.FormatFloat(doc0.Similarity*100, 'f', -1, 64) +
 			"`\n*タイトル:* `" + doc0.Title + "`\n*Title:* `" + doc0.TitleRomaji +
 			"`\n*File:* `" + doc0.Filename +
-			"`\n*From* `" + strconv.FormatFloat(doc0.From, 'f', 2, 64) + "s` *to* `" +
-			strconv.FormatFloat(doc0.To, 'f', 2, 64) + "s`"
+			"`\n*From* `" + strconv.FormatFloat(doc0.From, 'f', -1, 64) + "s` *to* `" +
+			strconv.FormatFloat(doc0.To, 'f', -1, 64) + "s`"
 
 		_ = bot.SendAnimation(paras, "", nil)
 		return nil
