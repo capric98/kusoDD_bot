@@ -100,6 +100,7 @@ func (b *tgbot) call(fname string, k []string, v []string, filetype string, file
 	if len(k) != len(v) {
 		return nil, ErrKVnotFit
 	}
+	b.Log("telegram: call "+fname, 0)
 	req, ack := NewMultipart(apiUrl[fname], k, v, "", "", nil)
 	defer ack()
 

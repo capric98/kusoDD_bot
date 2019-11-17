@@ -11,5 +11,10 @@ var (
 
 func sendStickerFile(msg Message, bot Tgbot) error {
 	ID := msg.GetPhotoFileID()
-	return bot.GetFile([]string{"file_id"}, []string{ID})
+	if ID == "" {
+		bot.Log(ErrNoSticker, 0)
+	} else {
+		return bot.GetFile([]string{"file_id"}, []string{ID})
+	}
+	return nil
 }
