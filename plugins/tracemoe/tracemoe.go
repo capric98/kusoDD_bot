@@ -3,6 +3,7 @@ package tracemoe
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -97,6 +98,12 @@ func handle(msg message, bot tgbot) error {
 	resp.Body.Close()
 	if err != nil {
 		bot.Log("tracemoe: Json decode failed.", 0)
+		resp, _ = client.Get(prefix + url.QueryEscape(u))
+		bot.Log("tracemoe: Dump resp.Body ->", 0)
+		body, _ := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
+		bot.Log(string(body), 0)
+
 		return err
 	}
 
