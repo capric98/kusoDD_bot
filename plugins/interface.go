@@ -6,6 +6,7 @@ type Message interface {
 	GetChatIDStr() string
 	GetPhotoFileID() string
 	GetStickerFileID() string
+	GetMsgIDStr() string
 	GetReplyToStickerFileID() string
 	GetReplyToStickerFileName() string
 	GetReplyMsgIDStr() string
@@ -29,6 +30,7 @@ type Tgbot interface {
 	SendAnimation(paras map[string]string, filename string, data []byte) (fileID string)
 	SendPhoto(paras map[string]string, filename string, data []byte) (fileID []string)
 
+	GetBotName() string
 	GetConfig(name string) map[string]interface{}
 	Log(interface{}, int)
 }

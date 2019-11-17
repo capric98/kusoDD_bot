@@ -47,5 +47,14 @@ func Register(b interface{}) *complug {
 	c.commands["/help"] = printHelp
 	c.commands["/getsticker"] = getsticker.Handle
 	c.commands["/whatpic"] = saucenao.New(b)
+
+	// Add /command@kusoDD_bot
+	comlist := []string{}
+	for k, _ := range c.commands {
+		comlist = append(comlist, k)
+	}
+	for _, v := range comlist {
+		c.commands[v+"@"+b.(Tgbot).GetBotName()] = c.commands[v]
+	}
 	return c
 }

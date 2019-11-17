@@ -236,6 +236,10 @@ func toStr(n int64) string {
 	return strconv.FormatInt(n, 10)
 }
 
+func (b *tgbot) GetBotName() string {
+	return b.username
+}
+
 func (b *tgbot) GetConfig(name string) map[string]interface{} {
 	return b.pluginconf[name]
 }

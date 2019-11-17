@@ -5,9 +5,9 @@ var (
 	helpText = `*kusoDD_bot v0.1.0*
 by [capric98](https://github.com/capric98)
 
-/info bot信息
 /help 输出当前内容
-/getsticker 获取一张sticker`
+/getsticker 获取一张sticker
+/whatpic 使用sauceNAO搜索图片`
 )
 
 func printHelp(m interface{}, b interface{}) error {

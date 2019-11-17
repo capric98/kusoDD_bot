@@ -13,6 +13,7 @@ import (
 type tgbot struct {
 	client     *http.Client
 	token      string
+	username   string
 	hookSuffix string
 	hookPath   string
 	port       int
@@ -70,6 +71,7 @@ func Newbot(conf *string, loglevel *string) *tgbot {
 		if omap := obj.(map[string]interface{}); omap["ok"].(bool) {
 			if result := omap["result"].(map[string]interface{}); result["is_bot"].(bool) {
 				nb.Log("Validated: "+result["first_name"].(string), 1)
+				nb.username = result["username"].(string)
 			} else {
 				nb.Log("It is not a bot!", 1)
 				return nil
