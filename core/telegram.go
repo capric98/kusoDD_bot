@@ -69,7 +69,7 @@ func (b *tgbot) SendMessage(k []string, v []string) error {
 	return b.simpleCall("SendMessage", k, v)
 }
 
-func (b *tgbot) SendDocument(k []string, v []string, filename string, data []byte) (fileId string) {
+func (b *tgbot) SendDocument(k []string, v []string, filename string, data []byte) (fileID string) {
 	r, e := b.call("SendDocument", k, v, "document", filename, data)
 	if e != nil {
 		b.Log(e, 1)
@@ -77,14 +77,14 @@ func (b *tgbot) SendDocument(k []string, v []string, filename string, data []byt
 		if !r.Ok {
 			b.Log(r.Description, 1)
 		} else {
-			fileId = r.Result.Document.FileID
+			fileID = r.Result.Document.FileID
 		}
 
 	}
 	return
 }
 
-func (b *tgbot) SendAudio(k []string, v []string, filename string, data []byte) (fileId string) {
+func (b *tgbot) SendAudio(k []string, v []string, filename string, data []byte) (fileID string) {
 	r, e := b.call("SendAudio", k, v, "audio", filename, data)
 	if e != nil {
 		b.Log(e, 1)
@@ -92,14 +92,14 @@ func (b *tgbot) SendAudio(k []string, v []string, filename string, data []byte) 
 		if !r.Ok {
 			b.Log(r.Description, 1)
 		} else {
-			fileId = r.Result.Audio.FileID
+			fileID = r.Result.Audio.FileID
 		}
 
 	}
 	return
 }
 
-func (b *tgbot) SendPhoto(k []string, v []string, filename string, data []byte) (fileId string) {
+func (b *tgbot) SendPhoto(k []string, v []string, filename string, data []byte) (fileID []string) {
 	r, e := b.call("SendPhoto", k, v, "photo", filename, data)
 	if e != nil {
 		b.Log(e, 1)
@@ -107,13 +107,15 @@ func (b *tgbot) SendPhoto(k []string, v []string, filename string, data []byte) 
 		if !r.Ok {
 			b.Log(r.Description, 1)
 		} else {
-			fileId = r.Result.Photo[0].FileID
+			for _, v := range r.Result.Photo {
+				fileID = append(fileID, v.FileID)
+			}
 		}
 	}
 	return
 }
 
-func (b *tgbot) SendVideo(k []string, v []string, filename string, data []byte) (fileId string) {
+func (b *tgbot) SendVideo(k []string, v []string, filename string, data []byte) (fileID string) {
 	r, e := b.call("SendVideo", k, v, "video", filename, data)
 	if e != nil {
 		b.Log(e, 1)
@@ -121,14 +123,14 @@ func (b *tgbot) SendVideo(k []string, v []string, filename string, data []byte) 
 		if !r.Ok {
 			b.Log(r.Description, 1)
 		} else {
-			fileId = r.Result.Video.FileID
+			fileID = r.Result.Video.FileID
 		}
 
 	}
 	return
 }
 
-func (b *tgbot) SendAnimation(k []string, v []string, filename string, data []byte) (fileId string) {
+func (b *tgbot) SendAnimation(k []string, v []string, filename string, data []byte) (fileID string) {
 	r, e := b.call("SendAnimation", k, v, "animation", filename, data)
 	if e != nil {
 		b.Log(e, 1)
@@ -136,7 +138,7 @@ func (b *tgbot) SendAnimation(k []string, v []string, filename string, data []by
 		if !r.Ok {
 			b.Log(r.Description, 1)
 		} else {
-			fileId = r.Result.Animation.FileID
+			fileID = r.Result.Animation.FileID
 		}
 
 	}

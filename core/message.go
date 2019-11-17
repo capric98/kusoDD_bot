@@ -186,3 +186,11 @@ func (msg *Message) GetReplyToStickerFileName() string {
 func (msg *Message) GetReplyMsgIDStr() string {
 	return strconv.FormatInt(msg.Message.ReplyToMessage.MessageID, 10)
 }
+
+func (msg *Message) GetReplyToStickerSetName() string {
+	return msg.Message.ReplyToMessage.Sticker.SetName
+}
+
+func (msg *Message) GetReplyToStickerEmoji() string {
+	return msg.Message.ReplyToMessage.Sticker.Emoji
+}

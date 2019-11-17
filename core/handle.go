@@ -28,7 +28,7 @@ func (b *tgbot) Handle(r *http.Request) {
 	if e := json.NewDecoder(r.Body).Decode(pmsg); e != nil {
 		b.Log(e, 1)
 	} else {
-		b.Log(pmsg, 0)
+		//b.Log(pmsg, 0)
 		for _, p := range b.plugins {
 			go p.Handle(pmsg, b)
 		}
