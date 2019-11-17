@@ -55,6 +55,7 @@ func Newbot(conf *string, loglevel *string) *tgbot {
 			nb.Log(e, 1)
 			return nil
 		}
+		nb.Log(config, 0)
 
 		// Validation
 		resp, e := http.Get("https://api.telegram.org/bot" + config.Token + "/getMe")
