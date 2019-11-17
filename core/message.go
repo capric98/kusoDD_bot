@@ -3,12 +3,16 @@ package core
 import "strconv"
 
 type Message struct {
-	UpdateID       int64   `json:"update_id"`
-	Message        MsgType `json:"message"`
-	ReplyToMessage MsgType `json:"reply_to_message"`
+	UpdateID int64   `json:"update_id"`
+	Message  MsgType `json:"message"`
 }
 
 type MsgType struct {
+	BasicMsg
+	ReplyToMessage BasicMsg `json:"reply_to_message"`
+}
+
+type BasicMsg struct {
 	MessageID int64  `json:"message_id"`
 	Text      string `json:"text"`
 	Caption   string `json:"Caption"`
@@ -171,5 +175,5 @@ func (msg *Message) GetStickerFileID() string {
 }
 
 func (msg *Message) GetReplyToStickerFileID() string {
-	return msg.ReplyToMessage.Sticker.FileID
+	return msg.Message.ReplyToMessage.Sticker.FileID
 }
