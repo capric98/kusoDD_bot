@@ -2,12 +2,6 @@ package core
 
 import "strconv"
 
-type MessageIf interface {
-	GetCommands() (int, []string)
-	GetFromUserName() string
-	GetChatIDStr() string
-}
-
 type Message struct {
 	UpdateID int64   `json:"update_id"`
 	Message  MsgType `json:"message"`
@@ -155,4 +149,22 @@ func (msg *Message) GetChatIDStr() string {
 
 func (msg *Message) GetFromUserName() string {
 	return msg.Message.From.UserName
+}
+
+func (msg *Message) GetPhotoFileID() string {
+	result := ""
+	if msg.Message.Photo != nil {
+		max := 0
+		for _, v := range msg.Message.Photo {
+			if v.Width*v.Height > max {
+				max = v.Width * v.Height
+				result = v.FileID
+			}
+		}
+	}
+	return result
+}
+
+func (msg *Message) GetStickerFileID() string {
+	return msg.Message.Sticker.FileID
 }

@@ -15,16 +15,6 @@ import (
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-type Tgbot interface {
-	SetWebHook() error
-	CancelWebHook() error
-	SendChatAction([]string, []string) error
-	//action: typing, upload_photo, record_video, upload_video, record_audio, upload_audio,
-	// upload_document, find_location, record_video_note, upload_video_note
-	SendMessage([]string, []string) error
-	//chat_id, text, parse_mode, disable_web_page_preview, disable_notification, reply_to_message_id, reply_markup
-}
-
 type tgresp struct {
 	Ok          bool    `json:"ok"`
 	Description string  `json:"description"`
@@ -45,6 +35,38 @@ func (b *tgbot) Init() {
 	apiUrl["CancelWebHook"] = prefix + "deleteWebhook"
 	apiUrl["SendChatAction"] = prefix + "sendChatAction"
 	apiUrl["SendMessage"] = prefix + "sendmessage"
+	apiUrl["GetFile"] = prefix + "getFile"
+}
+
+func (b *tgbot) SetWebHook() error {
+	return b.simpleCall("SetWebHook", []string{"url"}, []string{b.hookSuffix + b.hookPath})
+}
+
+func (b *tgbot) CancelWebHook() (e error) {
+	return b.simpleCall("CancelWebHook", nil, nil)
+}
+
+func (b *tgbot) SendChatAction(k []string, v []string) error {
+	return b.simpleCall("SendChatAction", k, v)
+}
+
+func (b *tgbot) SendMessage(k []string, v []string) error {
+	return b.simpleCall("SendMessage", k, v)
+}
+
+func (b *tgbot) GetFile(k []string, v []string) error {
+	r, e := b.call("GetFile", k, v, "", "", nil)
+	if e != nil {
+		return e
+	}
+	b.Log(r, 1)
+	return nil
+}
+
+func check(resp *http.Response) (result tgresp) {
+	_ = json.NewDecoder(resp.Body).Decode(&result)
+	resp.Body.Close()
+	return result
 }
 
 func NewMultipart(api string, k []string, v []string, ftype string, filename string, data []byte) (req *http.Request, ack func()) {
@@ -96,28 +118,6 @@ func (b *tgbot) call(fname string, k []string, v []string, filetype string, file
 func (b *tgbot) simpleCall(fname string, k []string, v []string) (e error) {
 	_, e = b.call(fname, k, v, "", "", nil)
 	return
-}
-
-func (b *tgbot) SetWebHook() error {
-	return b.simpleCall("SetWebHook", []string{"url"}, []string{b.hookSuffix + b.hookPath})
-}
-
-func (b *tgbot) CancelWebHook() (e error) {
-	return b.simpleCall("CancelWebHook", nil, nil)
-}
-
-func (b *tgbot) SendChatAction(k []string, v []string) error {
-	return b.simpleCall("SendChatAction", k, v)
-}
-
-func (b *tgbot) SendMessage(k []string, v []string) error {
-	return b.simpleCall("SendMessage", k, v)
-}
-
-func check(resp *http.Response) (result tgresp) {
-	_ = json.NewDecoder(resp.Body).Decode(&result)
-	resp.Body.Close()
-	return result
 }
 
 func toStr(n int64) string {

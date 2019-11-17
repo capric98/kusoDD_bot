@@ -35,5 +35,6 @@ func NewPlugin() *complug {
 	}
 	c.commands["/info"] = printInfo
 	c.commands["/help"] = printHelp
+	c.commands["/getsticker"] = sendStickerFile
 	return c
 }
