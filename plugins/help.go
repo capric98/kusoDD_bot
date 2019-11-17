@@ -7,7 +7,8 @@ by [capric98](https://github.com/capric98)
 
 /help 输出当前内容
 /getsticker 获取一张sticker
-/whatpic 使用sauceNAO搜索图片`
+/whatpic 使用sauceNAO搜索图片
+/whatanime 使用tracemoe搜索番剧`
 )
 
 func printHelp(m interface{}, b interface{}) error {
