@@ -9,7 +9,11 @@ import "net/http"
 // }
 
 func (b *tgbot) Handle(r *http.Request) {
-	defer func() { recover() }()
+	defer func() {
+		if p := recover(); p != nil {
+			b.Log(p, 1)
+		}
+	}()
 	//msg := msgPool.Get()
 	//pmsg := msg.(*Message)
 	//We have to cleanup msg before putting it back to the pool,
