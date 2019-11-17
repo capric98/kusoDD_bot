@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -41,7 +42,7 @@ type saucenaoresp struct {
 			ExtUrls []string `json:"ext_urls"`
 			Title   string   `json:"title"`
 			Author  string   `json:"author_name"`
-			PixivID string   `json:"pixiv_id"`
+			PixivID int      `json:"pixiv_id"`
 			MemName string   `json:"member_name"`
 		} `json:"data"`
 	} `json:"results"`
@@ -93,13 +94,12 @@ func handle(msg message, bot tgbot) error {
 		"parse_mode":          "Markdown",
 	}
 
-	if sresp.Results[0].Data.PixivID != "" {
+	if sresp.Results[0].Data.PixivID != 0 {
 		paras["text"] = "*Pixiv Illustrator:* " + sresp.Results[0].Data.MemName +
-			"\n*Pixiv ID:* [" + sresp.Results[0].Data.PixivID + "](" + sresp.Results[0].Data.ExtUrls[0] + ")"
+			"\n*Pixiv ID:* [" + strconv.Itoa(sresp.Results[0].Data.PixivID) + "](" + sresp.Results[0].Data.ExtUrls[0] + ")"
 	} else {
 		paras["text"] = sresp.Results[0].Data.ExtUrls[0] +
 			"\n*Similarity:*" + sresp.Results[0].Header.Similarity
-
 	}
 
 	return bot.SendMessage(paras)

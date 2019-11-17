@@ -11,6 +11,7 @@ import "net/http"
 func (b *tgbot) Handle(r *http.Request) {
 	defer func() {
 		if p := recover(); p != nil {
+			b.Log("Recoverd.", 0)
 			b.Log(p, 1)
 		}
 	}()
