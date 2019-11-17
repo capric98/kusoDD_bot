@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/capric98/plugins/getsticker"
+	"github.com/capric98/kusoDD_bot/plugins/getsticker"
 )
 
 type complug struct {
-	commands map[string](func(Message, Tgbot) error)
+	commands map[string](func(interface{}, interface{}) error)
 }
 
 var (
@@ -40,10 +40,10 @@ func (c *complug) Name() string {
 
 func Register() *complug {
 	c := &complug{
-		commands: make(map[string](func(Message, Tgbot) error)),
+		commands: make(map[string](func(interface{}, interface{}) error)),
 	}
 	c.commands["/info"] = printInfo
 	c.commands["/help"] = printHelp
-	c.commands["/getsticker"] = getsticker.Handle()
+	c.commands["/getsticker"] = getsticker.Handle
 	return c
 }

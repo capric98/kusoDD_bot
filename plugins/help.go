@@ -10,7 +10,9 @@ by [capric98](https://github.com/capric98)
 /getsticker 获取一张sticker`
 )
 
-func printHelp(msg Message, bot Tgbot) error {
+func printHelp(m interface{}, b interface{}) error {
+	msg := m.(Message)
+	bot := b.(Tgbot)
 	return bot.SendMessage(map[string]string{
 		"chat_id":    msg.GetChatIDStr(),
 		"parse_mode": "Markdown",
@@ -20,7 +22,9 @@ func printHelp(msg Message, bot Tgbot) error {
 	})
 }
 
-func printInfo(msg Message, bot Tgbot) error {
+func printInfo(m interface{}, b interface{}) error {
+	msg := m.(Message)
+	bot := b.(Tgbot)
 	return bot.SendMessage(map[string]string{
 		"chat_id": msg.GetChatIDStr(),
 		"text":    info,

@@ -7,9 +7,21 @@ import (
 	"net/http"
 	"time"
 
-	. "github.com/capric98/kusoDD_bot/plugins"
 	"golang.org/x/image/webp"
 )
+
+type tgbot interface{
+	GetFile(map[string]string) string
+	SendMessage(map[string]string) string
+	SendDocument(map[string]string,string,[]byte) string
+	Log(interface{},int)
+}
+type message interface {
+	GetChatIDStr() string
+	GetReplyToStickerFileID() string
+	GetReplyToStickerSetName() string
+	GetReplyMsgIDStr() string
+}
 
 var (
 	client = &http.Client{
@@ -19,7 +31,10 @@ var (
 	ErrEmptyResponse = errors.New("commands: getFile call returns an empty response.")
 )
 
-func Handle(msg Message, bot Tgbot) error {
+func Handle(m interface{}, b interface{}) error {
+	msg := m.(message)
+	bot := b.(tgbot)
+
 	ID := msg.GetReplyToStickerFileID()
 	paras := map[string]string{
 		"chat_id":             msg.GetChatIDStr(),
