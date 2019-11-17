@@ -43,7 +43,7 @@ func Handle(m interface{}, b interface{}) error {
 
 	if ID == "" {
 		bot.Log(ErrNoSticker, 0)
-		bot.Log(msg, 0)
+		//bot.Log(msg, 0)
 		paras["text"] = "请对一个sticker回复该指令"
 		bot.SendMessage(paras)
 	} else {
