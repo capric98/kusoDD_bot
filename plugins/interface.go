@@ -7,6 +7,8 @@ type Message interface {
 	GetPhotoFileID() string
 	GetStickerFileID() string
 	GetReplyToStickerFileID() string
+	GetReplyToStickerFileName() string
+	GetReplyMsgIDStr() string
 }
 type Tgbot interface {
 	SetWebHook() error
@@ -16,7 +18,8 @@ type Tgbot interface {
 	// upload_document, find_location, record_video_note, upload_video_note
 	SendMessage([]string, []string) error
 	//chat_id, text, parse_mode, disable_web_page_preview, disable_notification, reply_to_message_id, reply_markup
-	GetFile(k []string, v []string) error
+	GetFile([]string, []string) string
 	//file_id
+	SendDocument(k []string, v []string, filename string, data []byte) (fileID string)
 	Log(interface{}, int)
 }

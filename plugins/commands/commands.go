@@ -2,11 +2,19 @@ package commands
 
 import (
 	. "github.com/capric98/kusoDD_bot/plugins"
+	"net/http"
+	"time"
 )
 
 type complug struct {
 	commands map[string](func(Message, Tgbot) error)
 }
+
+var (
+	client = &http.Client{
+		Timeout: 60 * time.Second,
+	}
+)
 
 func (c *complug) Handle(m interface{}, b interface{}) {
 	msg := m.(Message)

@@ -49,8 +49,9 @@ type BasicMsg struct {
 	ForwardMsgID  int64  `json:"forward_from_message_id"`
 	ForwardDate   int64  `json:"forward_date"`
 
-	Photo           []MsgPhoto  `json:"photo"`
 	MediaGroupID    string      `json:"media_group_id"`
+	Photo           []MsgPhoto  `json:"photo"`
+	Document        MsgFile     `json:"document"`
 	Audio           MsgAudio    `json:"audio"`
 	Video           MsgVideo    `json:"video"`
 	Sticker         MsgSticker  `json:"sticker"`
@@ -176,4 +177,12 @@ func (msg *Message) GetStickerFileID() string {
 
 func (msg *Message) GetReplyToStickerFileID() string {
 	return msg.Message.ReplyToMessage.Sticker.FileID
+}
+
+func (msg *Message) GetReplyToStickerFileName() string {
+	return msg.Message.ReplyToMessage.Sticker.SetName + msg.Message.ReplyToMessage.Sticker.Emoji
+}
+
+func (msg *Message) GetReplyMsgIDStr() string {
+	return strconv.FormatInt(msg.Message.ReplyToMessage.MessageID, 10)
 }

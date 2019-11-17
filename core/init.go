@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"time"
 )
 
 type tgbot struct {
@@ -72,7 +73,9 @@ func Newbot(conf *string, loglevel *string) *tgbot {
 		}
 
 		// Validate success, make bot.
-		nb.client = &http.Client{}
+		nb.client = &http.Client{
+			Timeout: 60 * time.Second,
+		}
 		nb.token = config.Token
 		nb.port = config.Port
 		nb.hookSuffix = config.HookSuffix

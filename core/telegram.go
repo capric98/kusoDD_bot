@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"mime"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
@@ -16,12 +17,18 @@ import (
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type tgresp struct {
-	Ok          bool    `json:"ok"`
-	Description string  `json:"description"`
-	Result      MsgType `json:"result"`
+	Ok          bool   `json:"ok"`
+	Description string `json:"description"`
+	Result      struct {
+		MsgType
+		FileID   string `json:"file_id"`
+		FileSize int64  `json:"file_size"`
+		FilePath string `json:"file_path"`
+	} `json:"result"`
 }
 
 var (
+	prefix   = "https://api.telegram.org/bot"
 	apiUrl   = make(map[string]string)
 	bytePool = sync.Pool{
 		New: func() interface{} { return new(bytes.Buffer) },
@@ -30,11 +37,12 @@ var (
 )
 
 func (b *tgbot) Init() {
-	prefix := "https://api.telegram.org/bot" + b.token + "/"
+	prefix += b.token + "/"
 	apiUrl["SetWebHook"] = prefix + "setWebhook"
 	apiUrl["CancelWebHook"] = prefix + "deleteWebhook"
 	apiUrl["SendChatAction"] = prefix + "sendChatAction"
 	apiUrl["SendMessage"] = prefix + "sendmessage"
+	apiUrl["SendDocument"] = prefix + "sendDocument"
 	apiUrl["GetFile"] = prefix + "getFile"
 }
 
@@ -43,7 +51,15 @@ func (b *tgbot) SetWebHook() error {
 }
 
 func (b *tgbot) CancelWebHook() (e error) {
-	return b.simpleCall("CancelWebHook", nil, nil)
+	//return b.simpleCall("CancelWebHook", nil, nil)
+	r, e := b.client.Get(apiUrl["CancelWebHook"])
+	if e == nil {
+		result := check(r)
+		if !result.Ok {
+			e = errors.New("telegram: " + result.Description)
+		}
+	}
+	return
 }
 
 func (b *tgbot) SendChatAction(k []string, v []string) error {
@@ -54,13 +70,28 @@ func (b *tgbot) SendMessage(k []string, v []string) error {
 	return b.simpleCall("SendMessage", k, v)
 }
 
-func (b *tgbot) GetFile(k []string, v []string) error {
-	r, e := b.call("GetFile", k, v, "", "", nil)
+func (b *tgbot) SendDocument(k []string, v []string, filename string, data []byte) (fileId string) {
+	r, e := b.call("SendDocument", k, v, "", filename, data)
 	if e != nil {
-		return e
+		b.Log(e, 1)
+	} else {
+		if !r.Ok {
+			b.Log(r.Description, 1)
+		} else {
+			fileId = r.Result.Document.FileID
+		}
+
 	}
-	b.Log(r, 1)
-	return nil
+	return
+}
+
+func (b *tgbot) GetFile(k []string, v []string) (r string) {
+	resp, e := b.call("GetFile", k, v, "", "", nil)
+	if e == nil {
+		r = "https://api.telegram.org/file/bot" + b.token + "/" + resp.Result.FilePath
+	}
+	//b.Log(resp, 1)
+	return
 }
 
 func check(resp *http.Response) (result tgresp) {
@@ -69,7 +100,7 @@ func check(resp *http.Response) (result tgresp) {
 	return result
 }
 
-func NewMultipart(api string, k []string, v []string, ftype string, filename string, data []byte) (req *http.Request, ack func()) {
+func NewMultipart(api string, k []string, v []string, filename string, data []byte) (req *http.Request, ack func()) {
 	buf := (bytePool.Get()).(*bytes.Buffer)
 	w := multipart.NewWriter(buf)
 
@@ -82,10 +113,10 @@ func NewMultipart(api string, k []string, v []string, ftype string, filename str
 		_ = w.WriteField(k[i], v[i])
 	}
 
-	if ftype != "" {
+	if filename != "" {
 		h := make(textproto.MIMEHeader)
 		h.Set("Content-Disposition",
-			fmt.Sprintf(`form-data; name="%s"; filename="%s"`, ftype, filename))
+			fmt.Sprintf(`form-data; name="%s"; filename="%s"`, mime.TypeByExtension(extension(filename)), filename))
 		p, _ := w.CreatePart(h)
 		_, _ = p.Write(data)
 	}
@@ -101,7 +132,7 @@ func (b *tgbot) call(fname string, k []string, v []string, filetype string, file
 		return nil, ErrKVnotFit
 	}
 	b.Log("telegram: call "+fname, 0)
-	req, ack := NewMultipart(apiUrl[fname], k, v, "", "", nil)
+	req, ack := NewMultipart(apiUrl[fname], k, v, "", nil)
 	defer ack()
 
 	resp, e := b.client.Do(req)
@@ -119,6 +150,14 @@ func (b *tgbot) call(fname string, k []string, v []string, filetype string, file
 func (b *tgbot) simpleCall(fname string, k []string, v []string) (e error) {
 	_, e = b.call(fname, k, v, "", "", nil)
 	return
+}
+
+func extension(filename string) string {
+	i := len(filename) - 1
+	for ; i > 0 && rune(filename[i]) != '.'; i-- {
+	}
+	fmt.Println(filename[i:])
+	return filename[i:]
 }
 
 func toStr(n int64) string {
