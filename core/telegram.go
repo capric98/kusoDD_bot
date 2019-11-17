@@ -72,7 +72,7 @@ func (b *tgbot) SendMessage(paras map[string]string) error {
 }
 
 func (b *tgbot) SendDocument(paras map[string]string, filename string, data []byte) (fileID string) {
-	_ = b.SendChatAction(map[string]string{"action": "upload_document"})
+	_ = b.SendChatAction(map[string]string{"action": "upload_document", "chat_id": paras["chat_id"]})
 
 	r, e := b.call("SendDocument", paras, "document", filename, data)
 	if e != nil {
@@ -89,7 +89,7 @@ func (b *tgbot) SendDocument(paras map[string]string, filename string, data []by
 }
 
 func (b *tgbot) SendAudio(paras map[string]string, filename string, data []byte) (fileID string) {
-	_ = b.SendChatAction(map[string]string{"action": "upload_audio"})
+	_ = b.SendChatAction(map[string]string{"action": "upload_audio", "chat_id": paras["chat_id"]})
 
 	r, e := b.call("SendAudio", paras, "audio", filename, data)
 	if e != nil {
@@ -106,7 +106,7 @@ func (b *tgbot) SendAudio(paras map[string]string, filename string, data []byte)
 }
 
 func (b *tgbot) SendPhoto(paras map[string]string, filename string, data []byte) (fileID []string) {
-	_ = b.SendChatAction(map[string]string{"action": "upload_photo"})
+	_ = b.SendChatAction(map[string]string{"action": "upload_photo", "chat_id": paras["chat_id"]})
 
 	r, e := b.call("SendPhoto", paras, "photo", filename, data)
 	if e != nil {
@@ -124,7 +124,7 @@ func (b *tgbot) SendPhoto(paras map[string]string, filename string, data []byte)
 }
 
 func (b *tgbot) SendVideo(paras map[string]string, filename string, data []byte) (fileID string) {
-	_ = b.SendChatAction(map[string]string{"action": "upload_video"})
+	_ = b.SendChatAction(map[string]string{"action": "upload_video", "chat_id": paras["chat_id"]})
 
 	r, e := b.call("SendVideo", paras, "video", filename, data)
 	if e != nil {
@@ -141,7 +141,7 @@ func (b *tgbot) SendVideo(paras map[string]string, filename string, data []byte)
 }
 
 func (b *tgbot) SendAnimation(paras map[string]string, filename string, data []byte) (fileID string) {
-	_ = b.SendChatAction(map[string]string{"action": "upload_video"})
+	_ = b.SendChatAction(map[string]string{"action": "upload_video", "chat_id": paras["chat_id"]})
 
 	r, e := b.call("SendAnimation", paras, "animation", filename, data)
 	if e != nil {
