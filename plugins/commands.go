@@ -6,6 +6,7 @@ import (
 
 	"github.com/capric98/kusoDD_bot/plugins/getsticker"
 	"github.com/capric98/kusoDD_bot/plugins/saucenao"
+	"github.com/capric98/kusoDD_bot/plugins/tracemoe"
 )
 
 type complug struct {
@@ -47,6 +48,7 @@ func Register(b interface{}) *complug {
 	c.commands["/help"] = printHelp
 	c.commands["/getsticker"] = getsticker.Handle
 	c.commands["/whatpic"] = saucenao.New(b)
+	c.commands["/whatanime"] = tracemoe.New(b)
 
 	// Add /command@kusoDD_bot
 	comlist := []string{}
