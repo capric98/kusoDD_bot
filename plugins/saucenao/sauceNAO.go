@@ -78,7 +78,8 @@ func handle(msg message, bot tgbot) error {
 	if ID == "" {
 		ID = msg.GetReplyToPhotoFileID()
 		if ID == "" {
-
+			paras["text"] = "内容里未找到图片，请对图片内容回复该命令。"
+			bot.SendMessage(paras)
 			return ErrNoPhoto
 		}
 	}
@@ -98,11 +99,12 @@ func handle(msg message, bot tgbot) error {
 
 	if sresp.Results[0].Data.PixivID != 0 {
 		paras["text"] = "*Pixiv Illustrator:* " + sresp.Results[0].Data.MemName +
-			"\n*Pixiv ID:* [" + strconv.Itoa(sresp.Results[0].Data.PixivID) + "](" + sresp.Results[0].Data.ExtUrls[0] + ")"
+			"\n*Pixiv ID:*         [" + strconv.Itoa(sresp.Results[0].Data.PixivID) + "](" + sresp.Results[0].Data.ExtUrls[0] + ")"
+		paras["text"] += "\n*Similarity:*        " + sresp.Results[0].Header.Similarity
 	} else {
 		paras["text"] = sresp.Results[0].Data.ExtUrls[0]
+		paras["text"] += "\n*Similarity:* " + sresp.Results[0].Header.Similarity
 	}
-	paras["text"] += "\n*Similarity:*" + sresp.Results[0].Header.Similarity
 
 	return bot.SendMessage(paras)
 }
