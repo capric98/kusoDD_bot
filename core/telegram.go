@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"mime"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
@@ -71,7 +70,7 @@ func (b *tgbot) SendMessage(k []string, v []string) error {
 }
 
 func (b *tgbot) SendDocument(k []string, v []string, filename string, data []byte) (fileId string) {
-	r, e := b.call("SendDocument", k, v, "", filename, data)
+	r, e := b.call("SendDocument", k, v, "document", filename, data)
 	if e != nil {
 		b.Log(e, 1)
 	} else {
@@ -100,7 +99,7 @@ func check(resp *http.Response) (result tgresp) {
 	return result
 }
 
-func NewMultipart(api string, k []string, v []string, filename string, data []byte) (req *http.Request, ack func()) {
+func NewMultipart(api string, k []string, v []string, name string, filename string, data []byte) (req *http.Request, ack func()) {
 	buf := (bytePool.Get()).(*bytes.Buffer)
 	w := multipart.NewWriter(buf)
 
@@ -116,7 +115,7 @@ func NewMultipart(api string, k []string, v []string, filename string, data []by
 	if filename != "" {
 		h := make(textproto.MIMEHeader)
 		h.Set("Content-Disposition",
-			fmt.Sprintf(`form-data; name="%s"; filename="%s"`, mime.TypeByExtension(extension(filename)), filename))
+			fmt.Sprintf(`form-data; name="%s"; filename="%s"`, name, filename))
 		p, _ := w.CreatePart(h)
 		_, _ = p.Write(data)
 	}
@@ -127,12 +126,12 @@ func NewMultipart(api string, k []string, v []string, filename string, data []by
 	return
 }
 
-func (b *tgbot) call(fname string, k []string, v []string, filetype string, filename string, data []byte) (*tgresp, error) {
+func (b *tgbot) call(fname string, k []string, v []string, name string, filename string, data []byte) (*tgresp, error) {
 	if len(k) != len(v) {
 		return nil, ErrKVnotFit
 	}
 	b.Log("telegram: call "+fname, 0)
-	req, ack := NewMultipart(apiUrl[fname], k, v, "", nil)
+	req, ack := NewMultipart(apiUrl[fname], k, v, name, filename, data)
 	defer ack()
 
 	resp, e := b.client.Do(req)
