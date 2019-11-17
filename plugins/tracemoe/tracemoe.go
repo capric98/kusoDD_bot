@@ -137,6 +137,8 @@ func handle(msg message, bot tgbot) error {
 			"/" + url.QueryEscape(doc0.Filename) + "?t=" +
 			strconv.FormatFloat(doc0.At, 'f', 2, 64) + "&token=" + doc0.TokenThumb + "&mute"
 
+		bot.Log(mediaUrl, 0)
+
 		paras["animation"] = mediaUrl
 		paras["caption"] = "*Similarity:* `" + strconv.FormatFloat(doc0.Similarity*100, 'f', 2, 64) +
 			"`\n*タイトル:* `" + doc0.Title + "`\n*Title:* `" + doc0.TitleRomaji +
