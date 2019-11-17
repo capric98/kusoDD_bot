@@ -24,8 +24,8 @@ type message interface {
 	GetChatIDStr() string
 	GetPhotoFileID() string
 	GetMsgIDStr() string
-	GetReplyToPhotoFileID() string
 	GetReplyMsgIDStr() string
+	GetReplyToPhotoFileID() string
 }
 
 type saucenaoresp struct {
@@ -70,7 +70,7 @@ func Handle(m interface{}, b interface{}) error {
 func handle(msg message, bot tgbot) error {
 	ID := msg.GetPhotoFileID()
 	paras := map[string]string{
-		"reply_to_message_id": msg.GetMsgIDStr(),
+		"reply_to_message_id": msg.GetReplyMsgIDStr(),
 		"chat_id":             msg.GetChatIDStr(),
 		"parse_mode":          "Markdown",
 	}
@@ -99,7 +99,7 @@ func handle(msg message, bot tgbot) error {
 
 	if sresp.Results[0].Data.PixivID != 0 {
 		paras["text"] = "\n*Similarity :* " + sresp.Results[0].Header.Similarity
-		paras["text"] += "*Illustrator:* " + sresp.Results[0].Data.MemName +
+		paras["text"] += "\n*Illustrator:* " + sresp.Results[0].Data.MemName +
 			"\n*Pixiv ID     :* [" + strconv.Itoa(sresp.Results[0].Data.PixivID) + "](" + sresp.Results[0].Data.ExtUrls[0] + ")"
 	} else {
 		paras["text"] = sresp.Results[0].Data.ExtUrls[0]
