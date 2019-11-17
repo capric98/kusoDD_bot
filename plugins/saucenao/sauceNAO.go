@@ -2,10 +2,11 @@ package saucenao
 
 import (
 	"errors"
-	jsoniter "github.com/json-iterator/go"
 	"net/http"
 	"net/url"
 	"time"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -40,6 +41,8 @@ type saucenaoresp struct {
 			ExtUrls []string `json:"ext_urls"`
 			Title   string   `json:"title"`
 			Author  string   `json:"author_name"`
+			PixivID string   `json:"pixiv_id"`
+			MemName string   `json:"member_name"`
 		} `json:"data"`
 	} `json:"results"`
 } //simple
@@ -89,8 +92,15 @@ func handle(msg message, bot tgbot) error {
 		"chat_id":             msg.GetChatIDStr(),
 		"parse_mode":          "Markdown",
 	}
-	paras["text"] = "Title: [" + sresp.Results[0].Data.Author + "](" +
-		sresp.Results[0].Data.ExtUrls[0] + ")\nSimilarity:" + sresp.Results[0].Header.Similarity
+
+	if sresp.Results[0].Data.PixivID != "" {
+		paras["text"] = "*Pixiv Illustrator:* " + sresp.Results[0].Data.MemName +
+			"\n*Pixiv ID:* [" + sresp.Results[0].Data.PixivID + "](" + sresp.Results[0].Data.ExtUrls[0] + ")"
+	} else {
+		paras["text"] = sresp.Results[0].Data.ExtUrls[0] +
+			"\n*Similarity:*" + sresp.Results[0].Header.Similarity
+
+	}
 
 	return bot.SendMessage(paras)
 }
