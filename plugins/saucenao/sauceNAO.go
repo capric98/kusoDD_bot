@@ -104,7 +104,7 @@ func handle(msg message, bot tgbot) error {
 
 	if sresp.Results[0].Data.PixivID != 0 {
 		paras["text"] = "\n*Similarity :* " + sresp.Results[0].Header.Similarity
-		paras["text"] += "\n*Illustrator:* " + sresp.Results[0].Data.MemName +
+		paras["text"] += "%\n*Illustrator:* " + sresp.Results[0].Data.MemName +
 			"\n*Pixiv ID     :* [" + strconv.Itoa(sresp.Results[0].Data.PixivID) + "](" + sresp.Results[0].Data.ExtUrls[0] + ")"
 	} else {
 		paras["text"] = sresp.Results[0].Data.ExtUrls[0]

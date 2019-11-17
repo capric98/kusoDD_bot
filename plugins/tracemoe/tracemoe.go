@@ -140,8 +140,8 @@ func handle(msg message, bot tgbot) error {
 		bot.Log(mediaUrl, 0)
 
 		paras["animation"] = mediaUrl
-		paras["caption"] = "*Similarity:* `" + strconv.FormatFloat(doc0.Similarity*100, 'f', -1, 64) +
-			"`\n*タイトル:* `" + doc0.Title + "`\n*Title:* `" + doc0.TitleRomaji +
+		paras["caption"] = "*Similarity:* `" + strconv.FormatFloat(doc0.Similarity*100, 'f', 2, 64) +
+			"%`\n*タイトル:* `" + doc0.Title + "`\n*Title:* `" + doc0.TitleRomaji +
 			"`\n*File:* `" + doc0.Filename +
 			"`\n*From* `" + strconv.FormatFloat(doc0.From, 'f', -1, 64) + "s` *to* `" +
 			strconv.FormatFloat(doc0.To, 'f', -1, 64) + "s`"
