@@ -10,11 +10,11 @@ import (
 	"golang.org/x/image/webp"
 )
 
-type tgbot interface{
+type tgbot interface {
 	GetFile(map[string]string) string
 	SendMessage(map[string]string) error
-	SendDocument(map[string]string,string,[]byte) string
-	Log(interface{},int)
+	SendDocument(map[string]string, string, []byte) string
+	Log(interface{}, int)
 }
 type message interface {
 	GetChatIDStr() string
@@ -43,7 +43,8 @@ func Handle(m interface{}, b interface{}) error {
 
 	if ID == "" {
 		bot.Log(ErrNoSticker, 0)
-		paras["text"] = "使用方式：对一个sticker回复该指令"
+		bot.Log(msg, 0)
+		paras["text"] = "请对一个sticker回复该指令"
 		bot.SendMessage(paras)
 	} else {
 		u := bot.GetFile(map[string]string{"file_id": ID})

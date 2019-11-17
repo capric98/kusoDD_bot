@@ -78,7 +78,7 @@ func handle(msg message, bot tgbot) error {
 	if ID == "" {
 		ID = msg.GetReplyToPhotoFileID()
 		if ID == "" {
-			paras["text"] = "内容里未找到图片，请对图片内容回复该命令。"
+			paras["text"] = "未找到图片，请对图片内容回复该命令。"
 			bot.SendMessage(paras)
 			return ErrNoPhoto
 		}
