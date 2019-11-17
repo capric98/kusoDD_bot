@@ -1,10 +1,13 @@
 package tracemoe
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"net/url"
 	"strconv"
 	"time"
@@ -53,6 +56,7 @@ var (
 	}
 	json   = jsoniter.ConfigCompatibleWithStandardLibrary
 	prefix = "https://trace.moe/api/search?token="
+	token  = ""
 	//mediaprefix = "https://media.trace.moe/video/${anilist_id}/${encodeURIComponent(filename)}?t=${at}&token=${tokenthumb}&mute"
 
 	ErrNoPhoto = errors.New("tracemoe: No photo in this message.")
@@ -61,6 +65,7 @@ var (
 func New(b interface{}) func(interface{}, interface{}) error {
 	conf := b.(tgbot).GetConfig("tracemoe")
 	prefix += conf["token"].(string) + "&url="
+	token = conf["token"].(string)
 	b.(tgbot).Log("tracemoe: set prefix -> "+prefix, 0)
 	return Handle
 }
@@ -87,6 +92,25 @@ func handle(msg message, bot tgbot) error {
 	}
 	u := bot.GetFile(map[string]string{"file_id": ID})
 	bot.Log("tracemoe: pic url -> "+u, 0)
+
+	fileresp, _ := client.Get(u)
+	body, _ := ioutil.ReadAll(fileresp.Body)
+	fileresp.Body.Close()
+
+	buf := new(bytes.Buffer)
+	w := multipart.NewWriter(buf)
+
+	w.WriteField("token", token)
+
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition",
+		fmt.Sprintf(`form-data; name="image"; filename="%s"`, getFilename(u)))
+	p, _ := w.CreatePart(h)
+	_, _ = p.Write(body)
+	w.Close()
+	req, _ := http.NewRequest("POST", "https://trace.moe/api/search", buf)
+	req.Header.Set("Content-Type", w.FormDataContentType())
+
 	resp, err := client.Get(prefix + url.QueryEscape(u))
 	if err != nil {
 		bot.Log("tracemoe: Making request failed.", 0)
@@ -124,4 +148,12 @@ func handle(msg message, bot tgbot) error {
 		paras["text"] = fmt.Sprintf("tracemoe: no Docs! Limit left: %d, Quota left %d", tresp.Limit, tresp.Quota)
 		return bot.SendMessage(paras)
 	}
+}
+
+func getFilename(s string) string {
+	i := len(s) - 1
+	for i > 0 && rune(s[i]) != '/' {
+		i--
+	}
+	return s[i+1:]
 }
