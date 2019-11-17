@@ -43,7 +43,7 @@ type doc struct {
 	To          float64 `json:"to"`
 	At          float64 `json:"at"`
 	Similarity  float64 `json:"similarity"`
-	AnilistID   string  `json:"anilist_id"`
+	AnilistID   int     `json:"anilist_id"`
 	TokenThumb  string  `json:"tokenthumb"`
 	Filename    string  `json:"filename"`
 	Title       string  `json:"title"`
@@ -111,7 +111,7 @@ func handle(msg message, bot tgbot) error {
 	req, _ := http.NewRequest("POST", "https://trace.moe/api/search", buf)
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
-	resp, err := client.Get(prefix + url.QueryEscape(u))
+	resp, err := client.Do(req)
 	if err != nil {
 		bot.Log("tracemoe: Making request failed.", 0)
 		return err
@@ -133,7 +133,7 @@ func handle(msg message, bot tgbot) error {
 
 	if len(tresp.Docs) != 0 {
 		doc0 := tresp.Docs[0]
-		mediaUrl := "https://media.trace.moe/video/" + doc0.AnilistID +
+		mediaUrl := "https://media.trace.moe/video/" + strconv.Itoa(doc0.AnilistID) +
 			"/" + url.QueryEscape(doc0.Filename) + "?t=" +
 			strconv.FormatFloat(doc0.At, 'f', 2, 64) + "&token=" + doc0.TokenThumb + "&mute"
 
