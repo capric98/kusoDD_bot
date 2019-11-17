@@ -15,17 +15,17 @@ type Message interface {
 type Tgbot interface {
 	SetWebHook() error
 	CancelWebHook() error
-	SendChatAction([]string, []string) error
+	SendChatAction(paras map[string]string) error
 	//action: typing, upload_photo, record_video, upload_video, record_audio, upload_audio,
 	// upload_document, find_location, record_video_note, upload_video_note
-	SendMessage([]string, []string) error
+	SendMessage(paras map[string]string) error
 	//chat_id, text, parse_mode, disable_web_page_preview, disable_notification, reply_to_message_id, reply_markup
-	GetFile([]string, []string) string
+	GetFile(paras map[string]string) string
 	//file_id
-	SendDocument(k []string, v []string, filename string, data []byte) (fileID string)
-	SendAudio(k []string, v []string, filename string, data []byte) (fileID string)
-	SendVideo(k []string, v []string, filename string, data []byte) (fileID string)
-	SendAnimation(k []string, v []string, filename string, data []byte) (fileID string)
-	SendPhoto(k []string, v []string, filename string, data []byte) (fileID []string)
+	SendDocument(paras map[string]string, filename string, data []byte) (fileID string)
+	SendAudio(paras map[string]string, filename string, data []byte) (fileID string)
+	SendVideo(paras map[string]string, filename string, data []byte) (fileID string)
+	SendAnimation(paras map[string]string, filename string, data []byte) (fileID string)
+	SendPhoto(paras map[string]string, filename string, data []byte) (fileID []string)
 	Log(interface{}, int)
 }

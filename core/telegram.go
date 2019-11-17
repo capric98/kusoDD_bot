@@ -46,7 +46,9 @@ func (b *tgbot) Init() {
 }
 
 func (b *tgbot) SetWebHook() error {
-	return b.simpleCall("SetWebHook", []string{"url"}, []string{b.hookSuffix + b.hookPath})
+	return b.simpleCall("SetWebHook", map[string]string{
+		"url": b.hookSuffix + b.hookPath,
+	})
 }
 
 func (b *tgbot) CancelWebHook() (e error) {
@@ -61,16 +63,16 @@ func (b *tgbot) CancelWebHook() (e error) {
 	return
 }
 
-func (b *tgbot) SendChatAction(k []string, v []string) error {
-	return b.simpleCall("SendChatAction", k, v)
+func (b *tgbot) SendChatAction(paras map[string]string) error {
+	return b.simpleCall("SendChatAction", paras)
 }
 
-func (b *tgbot) SendMessage(k []string, v []string) error {
-	return b.simpleCall("SendMessage", k, v)
+func (b *tgbot) SendMessage(paras map[string]string) error {
+	return b.simpleCall("SendMessage", paras)
 }
 
-func (b *tgbot) SendDocument(k []string, v []string, filename string, data []byte) (fileID string) {
-	r, e := b.call("SendDocument", k, v, "document", filename, data)
+func (b *tgbot) SendDocument(paras map[string]string, filename string, data []byte) (fileID string) {
+	r, e := b.call("SendDocument", paras, "document", filename, data)
 	if e != nil {
 		b.Log(e, 1)
 	} else {
@@ -84,8 +86,8 @@ func (b *tgbot) SendDocument(k []string, v []string, filename string, data []byt
 	return
 }
 
-func (b *tgbot) SendAudio(k []string, v []string, filename string, data []byte) (fileID string) {
-	r, e := b.call("SendAudio", k, v, "audio", filename, data)
+func (b *tgbot) SendAudio(paras map[string]string, filename string, data []byte) (fileID string) {
+	r, e := b.call("SendAudio", paras, "audio", filename, data)
 	if e != nil {
 		b.Log(e, 1)
 	} else {
@@ -99,8 +101,8 @@ func (b *tgbot) SendAudio(k []string, v []string, filename string, data []byte) 
 	return
 }
 
-func (b *tgbot) SendPhoto(k []string, v []string, filename string, data []byte) (fileID []string) {
-	r, e := b.call("SendPhoto", k, v, "photo", filename, data)
+func (b *tgbot) SendPhoto(paras map[string]string, filename string, data []byte) (fileID []string) {
+	r, e := b.call("SendPhoto", paras, "photo", filename, data)
 	if e != nil {
 		b.Log(e, 1)
 	} else {
@@ -115,8 +117,8 @@ func (b *tgbot) SendPhoto(k []string, v []string, filename string, data []byte) 
 	return
 }
 
-func (b *tgbot) SendVideo(k []string, v []string, filename string, data []byte) (fileID string) {
-	r, e := b.call("SendVideo", k, v, "video", filename, data)
+func (b *tgbot) SendVideo(paras map[string]string, filename string, data []byte) (fileID string) {
+	r, e := b.call("SendVideo", paras, "video", filename, data)
 	if e != nil {
 		b.Log(e, 1)
 	} else {
@@ -130,8 +132,8 @@ func (b *tgbot) SendVideo(k []string, v []string, filename string, data []byte) 
 	return
 }
 
-func (b *tgbot) SendAnimation(k []string, v []string, filename string, data []byte) (fileID string) {
-	r, e := b.call("SendAnimation", k, v, "animation", filename, data)
+func (b *tgbot) SendAnimation(paras map[string]string, filename string, data []byte) (fileID string) {
+	r, e := b.call("SendAnimation", paras, "animation", filename, data)
 	if e != nil {
 		b.Log(e, 1)
 	} else {
@@ -145,8 +147,8 @@ func (b *tgbot) SendAnimation(k []string, v []string, filename string, data []by
 	return
 }
 
-func (b *tgbot) GetFile(k []string, v []string) (r string) {
-	resp, e := b.call("GetFile", k, v, "", "", nil)
+func (b *tgbot) GetFile(paras map[string]string) (r string) {
+	resp, e := b.call("GetFile", paras, "", "", nil)
 	if e == nil {
 		r = "https://api.telegram.org/file/bot" + b.token + "/" + resp.Result.FilePath
 	}
@@ -160,7 +162,7 @@ func check(resp *http.Response) (result tgresp) {
 	return result
 }
 
-func NewMultipart(api string, k []string, v []string, name string, filename string, data []byte) (req *http.Request, ack func()) {
+func NewMultipart(api string, paras map[string]string, name string, filename string, data []byte) (req *http.Request, ack func()) {
 	buf := (bytePool.Get()).(*bytes.Buffer)
 	w := multipart.NewWriter(buf)
 
@@ -169,8 +171,8 @@ func NewMultipart(api string, k []string, v []string, name string, filename stri
 		bytePool.Put(buf)
 	}
 
-	for i := range k {
-		_ = w.WriteField(k[i], v[i])
+	for k, v := range paras {
+		_ = w.WriteField(k, v)
 	}
 
 	if filename != "" {
@@ -187,12 +189,9 @@ func NewMultipart(api string, k []string, v []string, name string, filename stri
 	return
 }
 
-func (b *tgbot) call(fname string, k []string, v []string, name string, filename string, data []byte) (*tgresp, error) {
-	if len(k) != len(v) {
-		return nil, ErrKVnotFit
-	}
+func (b *tgbot) call(fname string, paras map[string]string, name string, filename string, data []byte) (*tgresp, error) {
 	b.Log("telegram: call "+fname, 0)
-	req, ack := NewMultipart(apiUrl[fname], k, v, name, filename, data)
+	req, ack := NewMultipart(apiUrl[fname], paras, name, filename, data)
 	defer ack()
 
 	resp, e := b.client.Do(req)
@@ -207,8 +206,8 @@ func (b *tgbot) call(fname string, k []string, v []string, name string, filename
 	}
 }
 
-func (b *tgbot) simpleCall(fname string, k []string, v []string) (e error) {
-	_, e = b.call(fname, k, v, "", "", nil)
+func (b *tgbot) simpleCall(fname string, paras map[string]string) (e error) {
+	_, e = b.call(fname, paras, "", "", nil)
 	return
 }
 

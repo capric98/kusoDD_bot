@@ -12,7 +12,11 @@ by [capric98](https://github.com/capric98)
 /getsticker 获取一张sticker`
 
 func printHelp(msg Message, bot Tgbot) error {
-	k := []string{"chat_id", "parse_mode", "text", "disable_web_page_preview"}
-	v := []string{msg.GetChatIDStr(), "Markdown", helpText, "true"}
-	return bot.SendMessage(k, v)
+	return bot.SendMessage(map[string]string{
+		"chat_id":    msg.GetChatIDStr(),
+		"parse_mode": "Markdown",
+		"text":       helpText,
+
+		"disable_web_page_preview": "true",
+	})
 }

@@ -9,7 +9,8 @@ var (
 )
 
 func printInfo(msg Message, bot Tgbot) error {
-	k := []string{"chat_id", "text"}
-	v := []string{msg.GetChatIDStr(), info}
-	return bot.SendMessage(k, v)
+	return bot.SendMessage(map[string]string{
+		"chat_id": msg.GetChatIDStr(),
+		"text":    info,
+	})
 }
