@@ -25,7 +25,7 @@ type Tgbot interface {
 	SendDocument(k []string, v []string, filename string, data []byte) (fileID string)
 	SendAudio(k []string, v []string, filename string, data []byte) (fileID string)
 	SendVideo(k []string, v []string, filename string, data []byte) (fileID string)
-	SendAnimation(k []string, v []string, filename string, data []byte) (fileID []string)
-	SendPhoto(k []string, v []string, filename string, data []byte) (fileID string)
+	SendAnimation(k []string, v []string, filename string, data []byte) (fileID string)
+	SendPhoto(k []string, v []string, filename string, data []byte) (fileID []string)
 	Log(interface{}, int)
 }
