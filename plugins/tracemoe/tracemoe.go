@@ -122,7 +122,7 @@ func handle(msg message, bot tgbot) error {
 	resp.Body.Close()
 	if err != nil {
 		bot.Log("tracemoe: Json decode failed.", 0)
-		resp, _ = client.Get(prefix + url.QueryEscape(u))
+		resp, _ = client.Get(prefix + url.PathEscape(u))
 		bot.Log("tracemoe: Dump resp.Body ->", 0)
 		body, _ := ioutil.ReadAll(resp.Body)
 		resp.Body.Close()
