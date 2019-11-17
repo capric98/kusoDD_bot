@@ -84,9 +84,10 @@ func handle(msg message, bot tgbot) error {
 		return err
 	}
 
-	var paras map[string]string
-	paras["reply_to_message_id"] = msg.GetReplyMsgIDStr()
-	paras["chat_id"] = msg.GetChatIDStr()
+	paras := map[string]string{
+		"reply_to_message_id": msg.GetReplyMsgIDStr(),
+		"chat_id":             msg.GetChatIDStr(),
+	}
 	paras["text"] = "author: " + sresp.Results[0].Data.Author + "\nSimilarity:" + sresp.Results[0].Header.Similarity
 
 	return bot.SendMessage(paras)
