@@ -38,7 +38,7 @@ func (c *complug) Name() string {
 	return "commands"
 }
 
-func RegisterPlugins() *complug {
+func Register() *complug {
 	c := &complug{
 		commands: make(map[string](func(Message, Tgbot) error)),
 	}
