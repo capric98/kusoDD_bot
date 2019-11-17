@@ -70,6 +70,7 @@ func handle(msg message, bot tgbot) error {
 		}
 	}
 	u := bot.GetFile(map[string]string{"file_id": ID})
+	bot.Log("sauceNAO: pic url -> "+u, 0)
 	resp, err := client.Get(u)
 	if err != nil {
 		return err
