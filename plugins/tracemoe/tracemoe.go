@@ -1,13 +1,10 @@
 package tracemoe
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"mime/multipart"
 	"net/http"
-	"net/textproto"
 	"net/url"
 	"strconv"
 	"time"
@@ -93,27 +90,33 @@ func handle(msg message, bot tgbot) error {
 	u := bot.GetFile(map[string]string{"file_id": ID})
 	bot.Log("tracemoe: pic url -> "+u, 0)
 
-	fileresp, _ := client.Get(u)
-	body, _ := ioutil.ReadAll(fileresp.Body)
-	fileresp.Body.Close()
+	// fileresp, _ := client.Get(u)
+	// body, _ := ioutil.ReadAll(fileresp.Body)
+	// fileresp.Body.Close()
 
-	buf := new(bytes.Buffer)
-	w := multipart.NewWriter(buf)
+	// buf := new(bytes.Buffer)
+	// w := multipart.NewWriter(buf)
 
-	w.WriteField("token", token)
+	// w.WriteField("token", token)
 
-	h := make(textproto.MIMEHeader)
-	h.Set("Content-Disposition",
-		fmt.Sprintf(`form-data; name="image"; filename="%s"`, getFilename(u)))
-	p, _ := w.CreatePart(h)
-	_, _ = p.Write(body)
-	w.Close()
-	req, _ := http.NewRequest("POST", "https://trace.moe/api/search", buf)
-	req.Header.Set("Content-Type", w.FormDataContentType())
+	// h := make(textproto.MIMEHeader)
+	// h.Set("Content-Disposition",
+	// 	fmt.Sprintf(`form-data; name="image"; filename="%s"`, getFilename(u)))
+	// p, _ := w.CreatePart(h)
+	// _, _ = p.Write(body)
+	// w.Close()
+	// req, _ := http.NewRequest("POST", "https://trace.moe/api/search", buf)
+	// req.Header.Set("Content-Type", w.FormDataContentType())
 
-	resp, err := client.Do(req)
+	// resp, err := client.Do(req)
+	// if err != nil {
+	// 	bot.Log("tracemoe: Making request failed.", 0)
+	// 	return err
+	// }
+
+	resp, err := client.Get(prefix + url.PathEscape(u))
 	if err != nil {
-		bot.Log("tracemoe: Making request failed.", 0)
+		bot.Log(err, 1)
 		return err
 	}
 
@@ -134,7 +137,7 @@ func handle(msg message, bot tgbot) error {
 	if len(tresp.Docs) != 0 {
 		doc0 := tresp.Docs[0]
 		mediaUrl := "https://media.trace.moe/video/" + strconv.Itoa(doc0.AnilistID) +
-			"/" + url.QueryEscape(doc0.Filename) + "?t=" +
+			"/" + url.PathEscape(doc0.Filename) + "?t=" +
 			strconv.FormatFloat(doc0.At, 'f', 2, 64) + "&token=" + doc0.TokenThumb + "&mute"
 
 		bot.Log(mediaUrl, 0)
