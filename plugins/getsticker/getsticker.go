@@ -12,7 +12,7 @@ import (
 
 type tgbot interface{
 	GetFile(map[string]string) string
-	SendMessage(map[string]string) string
+	SendMessage(map[string]string) error
 	SendDocument(map[string]string,string,[]byte) string
 	Log(interface{},int)
 }
