@@ -157,18 +157,24 @@ func (msg *Message) GetFromUserName() string {
 	return msg.Message.From.UserName
 }
 
-func (msg *Message) GetPhotoFileID() string {
+func getPhotoFileID(photos []MsgPhoto) string {
 	result := ""
-	if msg.Message.Photo != nil {
-		max := 0
-		for _, v := range msg.Message.Photo {
-			if v.Width*v.Height > max {
-				max = v.Width * v.Height
-				result = v.FileID
-			}
+	max := 0
+	for _, v := range photos {
+		if v.Width*v.Height > max {
+			max = v.Width * v.Height
+			result = v.FileID
 		}
 	}
 	return result
+}
+
+func (msg *Message) GetPhotoFileID() string {
+	return getPhotoFileID(msg.Message.Photo)
+}
+
+func (msg *Message) GetReplyToPhotoFileID() string {
+	return getPhotoFileID(msg.Message.ReplyToMessage.Photo)
 }
 
 func (msg *Message) GetStickerFileID() string {

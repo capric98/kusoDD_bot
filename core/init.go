@@ -18,6 +18,7 @@ type tgbot struct {
 	port       int
 	loglevel   int // -1:debug 0:normal 100:none
 	plugins    []Plugin
+	pluginconf map[string](map[string]interface{})
 }
 
 type settings struct {
@@ -25,11 +26,16 @@ type settings struct {
 	HookSuffix string `json:"hookSuffix"`
 	HookPath   string `json:"hookPath"`
 	Port       int    `json:"port"`
+	Plugins    []struct {
+		Name     string                 `json:"name"`
+		Settings map[string]interface{} `json:"settings"`
+	} `json:"plugins"`
 }
 
 func Newbot(conf *string, loglevel *string) *tgbot {
 	nb := &tgbot{
-		loglevel: 0,
+		loglevel:   0,
+		pluginconf: make(map[string](map[string]interface{})),
 	}
 	switch *loglevel {
 	case "debug":
@@ -85,6 +91,9 @@ func Newbot(conf *string, loglevel *string) *tgbot {
 			return nil
 		}
 		nb.Init()
+		for _, s := range config.Plugins {
+			nb.pluginconf[s.Name] = s.Settings
+		}
 		nb.RegisterPlugins(config)
 		return nb
 	} else {

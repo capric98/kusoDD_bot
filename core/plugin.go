@@ -12,6 +12,6 @@ type Plugin interface {
 
 func (b *tgbot) RegisterPlugins(conf settings) {
 	//Default: Command Handle
-	b.plugins = append(b.plugins, plugins.Register())
+	b.plugins = append(b.plugins, plugins.Register(b))
 	// Could register other non-command plugins...
 }

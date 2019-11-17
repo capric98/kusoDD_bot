@@ -11,6 +11,7 @@ type Message interface {
 	GetReplyMsgIDStr() string
 	GetReplyToStickerSetName() string
 	GetReplyToStickerEmoji() string
+	GetReplyToPhotoFileID() string
 }
 type Tgbot interface {
 	SetWebHook() error
@@ -27,5 +28,7 @@ type Tgbot interface {
 	SendVideo(paras map[string]string, filename string, data []byte) (fileID string)
 	SendAnimation(paras map[string]string, filename string, data []byte) (fileID string)
 	SendPhoto(paras map[string]string, filename string, data []byte) (fileID []string)
+
+	GetConfig(name string) map[string]interface{}
 	Log(interface{}, int)
 }

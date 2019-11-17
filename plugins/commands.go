@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/capric98/kusoDD_bot/plugins/getsticker"
+	"github.com/capric98/kusoDD_bot/plugins/saucenao"
 )
 
 type complug struct {
@@ -38,12 +39,13 @@ func (c *complug) Name() string {
 	return "commands"
 }
 
-func Register() *complug {
+func Register(b interface{}) *complug {
 	c := &complug{
 		commands: make(map[string](func(interface{}, interface{}) error)),
 	}
 	c.commands["/info"] = printInfo
 	c.commands["/help"] = printHelp
 	c.commands["/getsticker"] = getsticker.Handle
+	c.commands["/whatpic"] = saucenao.New(b)
 	return c
 }
