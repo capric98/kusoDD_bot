@@ -1,8 +1,8 @@
 module github.com/capric98/kusoDD_bot
 
-go 1.13
+go 1.14
 
 require (
-	github.com/json-iterator/go v1.1.8
-	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8
+	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.0.0-rc1
+	github.com/json-iterator/go v1.1.9
 )
