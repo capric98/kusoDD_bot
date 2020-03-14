@@ -108,7 +108,7 @@ func (b *Bot) handleUpdate() {
 			msg.Bot = b
 			msg.Update = update
 			for _, p := range b.plugins {
-				b.Println("Select:", p.name)
+				//b.Println("Select:", p.name)
 				select {
 				case <-time.After(p.timeout):
 					b.Printf("%6s - Plugin \"%s\" handled update timeout.\n", "info", p.name)

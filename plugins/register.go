@@ -16,7 +16,7 @@ func Register(name string, settings map[string]interface{}) (ok bool, f func(cor
 	case "getsticker":
 		f, timeout, opts = getsticker.New(settings)
 	// case "tracemoe":
-	// case "sauceNAO":
+	// case "saucenao":
 	default:
 		ok = false
 	}
