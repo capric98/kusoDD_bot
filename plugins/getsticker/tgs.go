@@ -19,7 +19,14 @@ func decodeTGS(pic []byte, filename string, msg core.Message) {
 			msg.Bot.Printf("%6s - getsticker failed: \"%v\".\n", "info", e)
 		}
 	}()
-	if _, e := os.Stat("tmp/" + filename + ".gif"); os.IsNotExist(e) {
+	ext := "." + msg.Message.CommandArguments()
+	switch ext {
+	case ".webp":
+	case ".gif":
+	default:
+		ext = ".gif"
+	}
+	if _, e := os.Stat("tmp/" + filename + ext); os.IsNotExist(e) {
 		if e := ioutil.WriteFile("tmp/"+filename+".tgs", pic, 0777); e != nil {
 			msg.Bot.Printf("%6s - getsticker failed to write tgs file: \"%v\".\n", "info", e)
 			return
@@ -31,12 +38,12 @@ func decodeTGS(pic []byte, filename string, msg core.Message) {
 		tgsCMD.Stderr = os.Stderr
 		_ = tgsCMD.Run()
 
-		ffmpegCMD := exec.Command("ffmpeg", "-i", "tmp/"+filename+".avi", "tmp/"+filename+".gif")
+		ffmpegCMD := exec.Command("ffmpeg", "-i", "tmp/"+filename+".avi", "-loop", "65535", "tmp/"+filename+ext)
 		_ = ffmpegCMD.Run()
 		_ = os.Remove("tmp/" + filename + ".avi")
 	}
 
-	fr, e := os.Open("tmp/" + filename + ".gif")
+	fr, e := os.Open("tmp/" + filename + ext)
 	if e != nil {
 		msg.Bot.Printf("%6s - getsticker failed to open cached gif file: \"%v\".\n", "info", e)
 		return
@@ -45,7 +52,7 @@ func decodeTGS(pic []byte, filename string, msg core.Message) {
 
 	resp := core.NewDocumentUpload(
 		msg.Message.Chat.ID,
-		core.NewFileBytes(filename+".gif", fr, info.Size()),
+		core.NewFileBytes(filename+ext, fr, info.Size()),
 	)
 	if _, e := msg.Bot.Send(resp); e != nil {
 		msg.Bot.Printf("%6s - getsticker failed to send response: \"%v\".\n", "info", e)
