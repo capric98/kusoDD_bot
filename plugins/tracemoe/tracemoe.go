@@ -56,6 +56,10 @@ func New(settings map[string]interface{}) (func(core.Message) <-chan bool, time.
 }
 
 func handle(msg core.Message) {
+	if msg.Message == nil {
+		ack <- false
+		return
+	}
 	if (msg.Message.IsCommand() && msg.Message.Command() == "whatanime") || msg.CaptionCommand() == "whatanime" {
 		ack <- true
 	} else {
@@ -97,7 +101,7 @@ func handle(msg core.Message) {
 	if fid == "" {
 		resp.Text = "消息内未发现图片，请尝试对一张图片回复/whatanime或者带上该命令直接发送一张图片。"
 	} else {
-		_, _ = msg.Bot.Send(core.NewChatAction(msg.Message.Chat.ID, "typing"))
+		go func() { _, _ = msg.Bot.Send(core.NewChatAction(msg.Message.Chat.ID, "TYPING")) }()
 
 		u, e := msg.Bot.GetFileDirectURL(fid)
 		if e != nil {
@@ -146,6 +150,8 @@ func handle(msg core.Message) {
 			return
 		}
 		if len(tresp.Docs) != 0 {
+			go func() { _, _ = msg.Bot.Send(core.NewChatAction(msg.Message.Chat.ID, "UPLOAD_VIDEO")) }()
+
 			doc0 := tresp.Docs[0]
 			mediaUrl := "https://media.trace.moe/video/" + strconv.Itoa(doc0.AnilistID) +
 				"/" + url.PathEscape(doc0.Filename) + "?t=" +
@@ -168,12 +174,13 @@ func handle(msg core.Message) {
 			}
 
 			return
-		} else {
-			resp.Text = "无查询结果，这可能是由于图片中带有黑边、遮挡物，或者trace.moe未收录"
-			_, _ = msg.Bot.Send(resp)
-			msg.Bot.Printf("%6s - tracemoe: no Docs! Limit left: %d, Quota left %d\n", "info", tresp.Limit, tresp.Quota)
 		}
+		// If there are some results back, the function will return before these.
+		msg.Bot.Printf("%6s - tracemoe: no Docs! Limit left: %d, Quota left %d\n", "info", tresp.Limit, tresp.Quota)
+		resp.Text = "无查询结果，这可能是由于图片中带有黑边、遮挡物，或者trace.moe未收录"
 	}
+	_, _ = msg.Bot.Send(resp)
+
 }
 
 func getFilename(s string) string {
