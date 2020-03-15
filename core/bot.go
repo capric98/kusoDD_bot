@@ -59,6 +59,8 @@ func NewBot(conf *Config, mode string, debug bool) (b *Bot, e error) {
 	b.msg = make(chan tgbotapi.Update, 10)
 	b.Debug = debug
 
+	_, _ = b.Request(tgbotapi.RemoveWebhookConfig{})
+
 	http.HandleFunc(b.Conf.Server.Path, func(w http.ResponseWriter, r *http.Request) {
 		var update tgbotapi.Update
 		_ = b.Json.NewDecoder(r.Body).Decode(&update)
