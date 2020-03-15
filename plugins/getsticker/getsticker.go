@@ -41,12 +41,16 @@ func handle(msg core.Message) <-chan bool {
 	case <-ack:
 	default:
 	}
+	if msg.Message == nil {
+		ack <- false
+		return ack
+	}
 
 	go func() {
 		if msg.Message.IsCommand() && msg.Message.Command() == "getsticker" {
 			ack <- true
 			sticker := msg.Message.Sticker
-			if sticker == nil {
+			if sticker == nil && msg.Message.ReplyToMessage != nil {
 				sticker = msg.Message.ReplyToMessage.Sticker
 			}
 			if sticker == nil {
