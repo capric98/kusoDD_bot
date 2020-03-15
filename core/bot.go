@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"crypto/tls"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -103,18 +104,23 @@ func (b *Bot) Run() (e error) {
 
 func (b *Bot) handleUpdate() {
 	for u := range b.msg {
+		b.printUpdate(u)
 		go func(update tgbotapi.Update) {
+			defer func() {
+				if e := recover(); e != nil {
+					log.Println(" core - Unexpected panic:", e)
+				}
+			}()
 			var msg Message
 			msg.Bot = b
 			msg.Update = update
 			for _, p := range b.plugins {
-				//b.Println("Select:", p.name)
 				select {
 				case <-time.After(p.timeout):
 					b.Printf("%6s - Plugin \"%s\" handled update timeout.\n", "info", p.name)
 				case do := <-p.handle(msg):
 					if do {
-						b.Printf("%6s - Plugin \"%s\" handled update %d.\n", "info", p.name, msg.UpdateID)
+						b.Printf("%6s - Plugin \"%s\" handled update %d.\n", "debug", p.name, msg.UpdateID)
 					}
 				}
 			}

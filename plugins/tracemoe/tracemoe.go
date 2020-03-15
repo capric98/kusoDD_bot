@@ -1,148 +1,185 @@
 package tracemoe
 
-// type tgbot interface {
-// 	GetFile(map[string]string) string
-// 	SendMessage(map[string]string) error
-// 	SendDocument(map[string]string, string, []byte) string
-// 	SendAnimation(paras map[string]string, filename string, data []byte) (fileID string)
+import (
+	"bytes"
+	"fmt"
+	"io/ioutil"
+	"mime/multipart"
+	"net/http"
+	"net/textproto"
+	"net/url"
+	"strconv"
+	"time"
 
-// 	GetConfig(name string) map[string]interface{}
-// 	Log(interface{}, int)
-// }
-// type message interface {
-// 	GetChatIDStr() string
-// 	GetPhotoFileID() string
-// 	GetMsgIDStr() string
-// 	GetReplyMsgIDStr() string
-// 	GetReplyToPhotoFileID() string
-// }
+	"github.com/capric98/kusoDD_bot/core"
+)
 
-// type traceresp struct {
-// 	Docs  []doc `json:"docs"`
-// 	Limit int   `json:"limit"`
-// 	Quota int   `json:"quota"`
-// }
+type Trace struct {
+	Docs  []doc `json:"docs"`
+	Limit int   `json:"limit"`
+	Quota int   `json:"quota"`
+}
 
-// type doc struct {
-// 	From        float64 `json:"from"`
-// 	To          float64 `json:"to"`
-// 	At          float64 `json:"at"`
-// 	Similarity  float64 `json:"similarity"`
-// 	AnilistID   int     `json:"anilist_id"`
-// 	TokenThumb  string  `json:"tokenthumb"`
-// 	Filename    string  `json:"filename"`
-// 	Title       string  `json:"title"`
-// 	TitleRomaji string  `json:"title_romaji"`
-// } //simple
+type doc struct {
+	From        float64 `json:"from"`
+	To          float64 `json:"to"`
+	At          float64 `json:"at"`
+	Similarity  float64 `json:"similarity"`
+	AnilistID   int     `json:"anilist_id"`
+	TokenThumb  string  `json:"tokenthumb"`
+	Filename    string  `json:"filename"`
+	Title       string  `json:"title"`
+	TitleRomaji string  `json:"title_romaji"`
+} //simple
 
-// var (
-// 	client = &http.Client{
-// 		Timeout: 10 * time.Second,
-// 	}
-// 	json   = jsoniter.ConfigCompatibleWithStandardLibrary
-// 	prefix = "https://trace.moe/api/search?token="
-// 	token  = ""
-// 	//mediaprefix = "https://media.trace.moe/video/${anilist_id}/${encodeURIComponent(filename)}?t=${at}&token=${tokenthumb}&mute"
+var (
+	client *http.Client
+	ack    = make(chan bool, 1)
+	prefix = "https://trace.moe/api/search?token="
+	token  = ""
+)
 
-// 	ErrNoPhoto = errors.New("tracemoe: No photo in this message.")
-// )
+func New(settings map[string]interface{}) (func(core.Message) <-chan bool, time.Duration, []core.Opt) {
+	client = &http.Client{Timeout: 10 * time.Second}
 
-// func New(b interface{}) func(interface{}, interface{}) error {
-// 	conf := b.(tgbot).GetConfig("tracemoe")
-// 	prefix += conf["token"].(string) + "&url="
-// 	token = conf["token"].(string)
-// 	b.(tgbot).Log("tracemoe: set prefix -> "+prefix, 0)
-// 	return Handle
-// }
+	token = settings["token"].(string)
+	prefix += token + "&url="
 
-// func Handle(m interface{}, b interface{}) error {
-// 	return handle(m.(message), b.(tgbot))
-// }
+	return func(msg core.Message) <-chan bool {
+		select {
+		case <-ack:
+		default:
+		}
+		go handle(msg)
+		return ack
+	}, 5 * time.Second, nil
+}
 
-// func handle(msg message, bot tgbot) error {
-// 	ID := msg.GetPhotoFileID()
-// 	paras := map[string]string{
-// 		"reply_to_message_id": msg.GetMsgIDStr(),
-// 		"chat_id":             msg.GetChatIDStr(),
-// 		"parse_mode":          "Markdown",
-// 	}
+func handle(msg core.Message) {
+	if (msg.Message.IsCommand() && msg.Message.Command() == "whatanime") || msg.CaptionCommand() == "whatanime" {
+		ack <- true
+	} else {
+		ack <- false
+		return
+	}
 
-// 	if ID == "" {
-// 		ID = msg.GetReplyToPhotoFileID()
-// 		if ID == "" {
-// 			paras["text"] = "未找到图片，请对图片内容回复该命令。"
-// 			bot.SendMessage(paras)
-// 			return ErrNoPhoto
-// 		}
-// 	}
-// 	u := bot.GetFile(map[string]string{"file_id": ID})
-// 	bot.Log("tracemoe: pic url -> "+u, 0)
+	resp := core.NewMessage(msg.Message.Chat.ID, "")
+	defer func() {
+		if e := recover(); e != nil {
+			resp.Text = fmt.Sprintf("查询异常：%v", e)
+			_, _ = msg.Bot.Send(resp)
+			msg.Bot.Printf("%6s - tracemoe failed: \"%v\".\n", "info", e)
+		}
+	}()
 
-// 	fileresp, _ := client.Get(u)
-// 	body, _ := ioutil.ReadAll(fileresp.Body)
-// 	fileresp.Body.Close()
+	var maxsize int
+	var fid string
 
-// 	buf := new(bytes.Buffer)
-// 	w := multipart.NewWriter(buf)
+	if msg.Message.ReplyToMessage != nil {
+		for _, p := range msg.Message.ReplyToMessage.Photo {
+			size := p.Width * p.Height
+			if size > maxsize {
+				maxsize = size
+				fid = p.FileID
+			}
+		}
+		resp.ReplyToMessageID = msg.Message.ReplyToMessage.MessageID
+	} else {
+		for _, p := range msg.Message.Photo {
+			size := p.Width * p.Height
+			if size > maxsize {
+				maxsize = size
+				fid = p.FileID
+			}
+		}
+	}
 
-// 	w.WriteField("token", token)
+	if fid == "" {
+		resp.Text = "消息内未发现图片，请尝试对一张图片回复/whatanime或者带上该命令直接发送一张图片。"
+	} else {
+		_, _ = msg.Bot.Send(core.NewChatAction(msg.Message.Chat.ID, "typing"))
 
-// 	h := make(textproto.MIMEHeader)
-// 	h.Set("Content-Disposition",
-// 		fmt.Sprintf(`form-data; name="image"; filename="%s"`, getFilename(u)))
-// 	p, _ := w.CreatePart(h)
-// 	_, _ = p.Write(body)
-// 	w.Close()
-// 	req, _ := http.NewRequest("POST", "https://trace.moe/api/search", buf)
-// 	req.Header.Set("Content-Type", w.FormDataContentType())
+		u, e := msg.Bot.GetFileDirectURL(fid)
+		if e != nil {
+			msg.Bot.Printf("%6s - tracemoe failed to get direct url: \"%v\".\n", "info", e)
+			return
+		}
 
-// 	resp, err := client.Do(req)
-// 	if err != nil {
-// 		bot.Log("tracemoe: Making request failed.", 0)
-// 		return err
-// 	}
+		fileresp, _ := client.Get(u)
+		body, _ := ioutil.ReadAll(fileresp.Body)
+		fileresp.Body.Close()
 
-// 	var tresp traceresp
-// 	err = json.NewDecoder(resp.Body).Decode(&tresp)
-// 	resp.Body.Close()
-// 	if err != nil {
-// 		bot.Log("tracemoe: Json decode failed.", 0)
-// 		resp, _ = client.Get(prefix + url.PathEscape(u))
-// 		bot.Log("tracemoe: Dump resp.Body ->", 0)
-// 		body, _ := ioutil.ReadAll(resp.Body)
-// 		resp.Body.Close()
-// 		bot.Log(string(body), 0)
+		buf := new(bytes.Buffer)
+		w := multipart.NewWriter(buf)
 
-// 		return err
-// 	}
+		_ = w.WriteField("token", token)
 
-// 	if len(tresp.Docs) != 0 {
-// 		doc0 := tresp.Docs[0]
-// 		mediaUrl := "https://media.trace.moe/video/" + strconv.Itoa(doc0.AnilistID) +
-// 			"/" + url.PathEscape(doc0.Filename) + "?t=" +
-// 			strconv.FormatFloat(doc0.At, 'f', -1, 64) + "&token=" + doc0.TokenThumb + "&mute"
+		h := make(textproto.MIMEHeader)
+		h.Set("Content-Disposition",
+			fmt.Sprintf(`form-data; name="image"; filename="%s"`, getFilename(u)))
+		p, _ := w.CreatePart(h)
+		_, _ = p.Write(body)
+		w.Close()
+		req, _ := http.NewRequest("POST", "https://trace.moe/api/search", buf)
+		req.Header.Set("Content-Type", w.FormDataContentType())
 
-// 		bot.Log(mediaUrl, 0)
+		aresp, err := client.Do(req)
+		for count := 0; count < 3 && err != nil; {
+			count++
+			aresp, err = client.Do(req)
+		}
+		if err != nil {
+			panic(err)
+		}
 
-// 		paras["animation"] = mediaUrl
-// 		paras["caption"] = "*Similarity:* `" + strconv.FormatFloat(doc0.Similarity*100, 'f', 2, 64) +
-// 			"%`\n*タイトル:* `" + doc0.Title + "`\n*Title:* `" + doc0.TitleRomaji +
-// 			"`\n*File:* `" + doc0.Filename +
-// 			"`\n*From* `" + strconv.FormatFloat(doc0.From, 'f', -1, 64) + "s` *to* `" +
-// 			strconv.FormatFloat(doc0.To, 'f', -1, 64) + "s`"
+		var tresp Trace
+		err = msg.Bot.Json.NewDecoder(aresp.Body).Decode(&tresp)
+		aresp.Body.Close()
+		if err != nil {
+			msg.Bot.Println("tracemoe: Json decode failed.", 0)
+			aresp, _ = client.Get(prefix + url.PathEscape(u))
+			msg.Bot.Println("tracemoe: Dump resp.Body ->", 0)
+			body, _ := ioutil.ReadAll(aresp.Body)
+			aresp.Body.Close()
+			msg.Bot.Println(string(body), 0)
 
-// 		_ = bot.SendAnimation(paras, "", nil)
-// 		return nil
-// 	} else {
-// 		paras["text"] = fmt.Sprintf("tracemoe: no Docs! Limit left: %d, Quota left %d", tresp.Limit, tresp.Quota)
-// 		return bot.SendMessage(paras)
-// 	}
-// }
+			return
+		}
+		if len(tresp.Docs) != 0 {
+			doc0 := tresp.Docs[0]
+			mediaUrl := "https://media.trace.moe/video/" + strconv.Itoa(doc0.AnilistID) +
+				"/" + url.PathEscape(doc0.Filename) + "?t=" +
+				strconv.FormatFloat(doc0.At, 'f', -1, 64) + "&token=" + doc0.TokenThumb + "&mute"
 
-// func getFilename(s string) string {
-// 	i := len(s) - 1
-// 	for i > 0 && rune(s[i]) != '/' {
-// 		i--
-// 	}
-// 	return s[i+1:]
-// }
+			if mresp, err := client.Get(mediaUrl); err != nil {
+				msg.Bot.Printf("%6s - tracemoe failed to download media: \"%v\".\n", "info", e)
+			} else {
+				fr := core.NewFileBytes("capture.mp4", mresp.Body, mresp.ContentLength)
+				ac := core.NewAnimationUpload(msg.Message.Chat.ID, fr)
+				ac.ParseMode = "Markdown"
+				ac.Caption = "*Similarity:* `" + strconv.FormatFloat(doc0.Similarity*100, 'f', 2, 64) +
+					"%`\n*タイトル:* `" + doc0.Title + /*"`\n*Title:* `" + doc0.TitleRomaji +*/ //deprecated
+					"`\n*File:* `" + doc0.Filename +
+					"`\n*From* `" + strconv.FormatFloat(doc0.From, 'f', -1, 64) + "s` *to* `" +
+					strconv.FormatFloat(doc0.To, 'f', -1, 64) + "s`"
+				if _, e := msg.Bot.Send(ac); e != nil {
+					msg.Bot.Printf("%6s - tracemoe failed to send response: \"%v\".\n", "info", e)
+				}
+			}
+
+			return
+		} else {
+			resp.Text = "无查询结果，这可能是由于图片中带有黑边、遮挡物，或者trace.moe未收录"
+			_, _ = msg.Bot.Send(resp)
+			msg.Bot.Printf("%6s - tracemoe: no Docs! Limit left: %d, Quota left %d\n", "info", tresp.Limit, tresp.Quota)
+		}
+	}
+}
+
+func getFilename(s string) string {
+	i := len(s) - 1
+	for i > 0 && rune(s[i]) != '/' {
+		i--
+	}
+	return s[i+1:]
+}

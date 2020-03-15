@@ -1,105 +1,135 @@
 package saucenao
 
-// var json = jsoniter.ConfigCompatibleWithStandardLibrary
+import (
+	"fmt"
+	"net/http"
+	"net/url"
+	"strconv"
+	"time"
 
-// type tgbot interface {
-// 	GetFile(map[string]string) string
-// 	SendMessage(map[string]string) error
-// 	SendDocument(map[string]string, string, []byte) string
+	"github.com/capric98/kusoDD_bot/core"
+)
 
-// 	GetConfig(name string) map[string]interface{}
-// 	Log(interface{}, int)
-// }
-// type message interface {
-// 	GetChatIDStr() string
-// 	GetPhotoFileID() string
-// 	GetMsgIDStr() string
-// 	GetReplyMsgIDStr() string
-// 	GetReplyToPhotoFileID() string
-// }
+type Sauce struct {
+	Header struct {
+		UserID     string `json:"user_id"`
+		ShortLimit string `json:"short_limit"`
+		LongLimit  string `json:"long_limit"`
+	} `json:"header"`
+	Results []struct {
+		Header struct {
+			Similarity string `json:"similarity"`
+			Thumbnail  string `json:"thumbnail"`
+		} `json:"header"`
+		Data struct {
+			ExtUrls []string `json:"ext_urls"`
+			Title   string   `json:"title"`
+			Author  string   `json:"author_name"`
+			PixivID int      `json:"pixiv_id"`
+			MemName string   `json:"member_name"`
+		} `json:"data"`
+	} `json:"results"`
+}
 
-// type saucenaoresp struct {
-// 	Header struct {
-// 		UserID     string `json:"user_id"`
-// 		ShortLimit string `json:"short_limit"`
-// 		LongLimit  string `json:"long_limit"`
-// 	} `json:"header"`
-// 	Results []struct {
-// 		Header struct {
-// 			Similarity string `json:"similarity"`
-// 			Thumbnail  string `json:"thumbnail"`
-// 		} `json:"header"`
-// 		Data struct {
-// 			ExtUrls []string `json:"ext_urls"`
-// 			Title   string   `json:"title"`
-// 			Author  string   `json:"author_name"`
-// 			PixivID int      `json:"pixiv_id"`
-// 			MemName string   `json:"member_name"`
-// 		} `json:"data"`
-// 	} `json:"results"`
-// } //simple
+var (
+	client *http.Client
+	ack    = make(chan bool, 1)
+	prefix = "https://saucenao.com/search.php?db=999&output_type=2&numres=1"
+)
 
-// var (
-// 	client = &http.Client{
-// 		Timeout: 10 * time.Second,
-// 	}
-// 	prefix     = "https://saucenao.com/search.php?db=999&output_type=2&numres=1"
-// 	ErrNoPhoto = errors.New("saucenao: No photo in this message.")
-// )
+func New(settings map[string]interface{}) (func(core.Message) <-chan bool, time.Duration, []core.Opt) {
+	client = &http.Client{Timeout: 5 * time.Second}
+	prefix += "&api_key=" + settings["key"].(string) + "&url="
+	return func(msg core.Message) <-chan bool {
+		select {
+		case <-ack:
+		default:
+		}
+		go handle(msg)
+		return ack
+	}, 5 * time.Second, nil
+}
 
-// func New(b interface{}) func(interface{}, interface{}) error {
-// 	conf := b.(tgbot).GetConfig("sauceNAO")
-// 	prefix += "&api_key=" + conf["key"].(string) + "&url="
-// 	return Handle
-// }
+func handle(msg core.Message) {
+	if (msg.Message.IsCommand() && msg.Message.Command() == "whatpic") || msg.CaptionCommand() == "whatpic" {
+		ack <- true
+		var maxsize int
+		var fid string
 
-// func Handle(m interface{}, b interface{}) error {
-// 	return handle(m.(message), b.(tgbot))
-// }
+		resp := core.NewMessage(msg.Message.Chat.ID, "")
+		if msg.Message.ReplyToMessage != nil {
+			for _, p := range msg.Message.ReplyToMessage.Photo {
+				size := p.Width * p.Height
+				if size > maxsize {
+					maxsize = size
+					fid = p.FileID
+				}
+			}
+			resp.ReplyToMessageID = msg.Message.ReplyToMessage.MessageID
+		} else {
+			for _, p := range msg.Message.Photo {
+				size := p.Width * p.Height
+				if size > maxsize {
+					maxsize = size
+					fid = p.FileID
+				}
+			}
+		}
 
-// func handle(msg message, bot tgbot) error {
-// 	ID := msg.GetPhotoFileID()
-// 	paras := map[string]string{
-// 		// 1. A send Photo, B reply it with /whatpic
-// 		//    -> bot will reply to A message
-// 		// 2. B send photo with caption /whatpic
-// 		//    -> bot will send message directly
-// 		//    (reply_to_message_id == "")
-// 		"reply_to_message_id": msg.GetReplyMsgIDStr(),
-// 		"chat_id":             msg.GetChatIDStr(),
-// 		"parse_mode":          "Markdown",
-// 	}
+		if fid == "" {
+			resp.Text = "消息内未发现图片，请尝试对一张图片回复/whatpic或者带上该命令直接发送一张图片。"
+		} else {
+			var e error
+			u, e := msg.Bot.GetFileDirectURL(fid)
+			if e != nil {
+				msg.Bot.Printf("%6s - saucenao failed to get direct url: \"%v\".\n", "info", e)
+			}
+			resp.Text, e = search(u, msg)
+			resp.ParseMode = "Markdown"
+			if e != nil {
+				msg.Bot.Printf("%6s - saucenao failed to search pic: \"%v\".\n", "info", e)
+				resp.Text = fmt.Sprintf("查询失败：%v", e)
+			}
+		}
+		if _, e := msg.Bot.Send(resp); e != nil {
+			msg.Bot.Printf("%6s - saucenao failed to send response: \"%v\".\n", "info", e)
+		}
+	} else {
+		ack <- false
+	}
+}
 
-// 	if ID == "" {
-// 		ID = msg.GetReplyToPhotoFileID()
-// 		if ID == "" {
-// 			paras["text"] = "未找到图片，请对图片内容回复该命令。"
-// 			bot.SendMessage(paras)
-// 			return ErrNoPhoto
-// 		}
-// 	}
-// 	u := bot.GetFile(map[string]string{"file_id": ID})
-// 	bot.Log("sauceNAO: pic url -> "+u, 0)
-// 	resp, err := client.Get(prefix + url.PathEscape(u))
-// 	if err != nil {
-// 		return err
-// 	}
+func search(u string, msg core.Message) (result string, e error) {
+	defer func() {
+		if err := recover(); err != nil {
+			e = err.(error)
+		}
+	}()
+	resp, err := client.Get(prefix + url.PathEscape(u))
+	if err != nil {
+		return "", err
+	}
+	var sresp Sauce
+	err = msg.Bot.Json.NewDecoder(resp.Body).Decode(&sresp)
+	resp.Body.Close()
+	if err != nil {
+		return "", err
+	}
 
-// 	var sresp saucenaoresp
-// 	err = json.NewDecoder(resp.Body).Decode(&sresp)
-// 	resp.Body.Close()
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	if sresp.Results[0].Data.PixivID != 0 {
-// 		paras["text"] = "\n*Similarity :* " + sresp.Results[0].Header.Similarity
-// 		paras["text"] += "%\n*Illustrator:* " + sresp.Results[0].Data.MemName +
-// 			"\n*Pixiv ID     :* [" + strconv.Itoa(sresp.Results[0].Data.PixivID) + "](" + sresp.Results[0].Data.ExtUrls[0] + ")"
-// 	} else {
-// 		paras["text"] = sresp.Results[0].Data.ExtUrls[0]
-// 		paras["text"] += "\n*Similarity:* " + sresp.Results[0].Header.Similarity
-// 	}
-
-// 	return bot.SendMessage(paras)
-// }
+	if len(sresp.Results) == 0 {
+		return "查询无结果，这可能是由于图片中带有黑边、遮挡物，或者SauceNAO未收录。", nil
+	}
+	if len(sresp.Results[0].Data.ExtUrls) == 0 {
+		return "无可靠结果，这可能是由于图片中带有黑边、遮挡物，或者SauceNAO未收录。", nil
+	}
+	if sresp.Results[0].Data.PixivID != 0 {
+		result = "\n*Similarity :* " + sresp.Results[0].Header.Similarity
+		result += "%\n*Illustrator:* " + sresp.Results[0].Data.MemName +
+			"\n*Pixiv ID     :* [" + strconv.Itoa(sresp.Results[0].Data.PixivID) +
+			"](" + result + sresp.Results[0].Data.ExtUrls[0] + ")"
+	} else {
+		result = sresp.Results[0].Data.ExtUrls[0]
+		result += "\n*Similarity:* " + sresp.Results[0].Header.Similarity
+	}
+	return result, nil
+}

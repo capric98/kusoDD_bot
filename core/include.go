@@ -16,6 +16,10 @@ func NewFileConfig(fid string) tgbotapi.FileConfig {
 	}
 }
 
+func NewAnimationUpload(chatid int64, file interface{}) tgbotapi.AnimationConfig {
+	return tgbotapi.NewAnimationUpload(chatid, file)
+}
+
 func NewDocumentUpload(chatid int64, file interface{}) tgbotapi.DocumentConfig {
 	return tgbotapi.NewDocumentUpload(chatid, file)
 }
@@ -26,4 +30,8 @@ func NewFileBytes(filename string, fr io.Reader, size int64) tgbotapi.FileReader
 		Reader: fr,
 		Size:   size,
 	}
+}
+
+func NewChatAction(chatid int64, action string) tgbotapi.ChatActionConfig {
+	return tgbotapi.NewChatAction(chatid, action)
 }
