@@ -84,6 +84,7 @@ func handle(msg core.Message) {
 			if e != nil {
 				msg.Bot.Printf("%6s - saucenao failed to get direct url: \"%v\".\n", "info", e)
 			}
+			go func() { _, _ = msg.Bot.Send(core.NewChatAction(msg.Message.Chat.ID, "TYPING")) }()
 			resp.Text, e = search(u, msg)
 			resp.ParseMode = "Markdown"
 			if e != nil {

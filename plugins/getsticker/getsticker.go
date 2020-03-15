@@ -60,6 +60,8 @@ func handle(msg core.Message) <-chan bool {
 					msg.Bot.Printf("%6s - getsticker failed to send response: \"%v\".\n", "info", e)
 				}
 			} else {
+				go func() { _, _ = msg.Bot.Send(core.NewChatAction(msg.Message.Chat.ID, "UPLOAD_DOCUMENT")) }()
+
 				filename := sticker.SetName + "-" + sticker.FileID + ".png"
 
 				slink, e := msg.Bot.GetFileDirectURL(sticker.FileID)
