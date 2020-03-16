@@ -44,6 +44,7 @@ var (
 func NewBot(conf *Config, mode string, debug bool) (b *Bot, e error) {
 	LV["debug"] = -1
 	LV["normal"] = 50
+	LV["warn"] = 60
 	LV["none"] = 100
 	b = &Bot{
 		Conf:    conf,

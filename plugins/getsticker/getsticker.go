@@ -57,7 +57,7 @@ func handle(msg core.Message) <-chan bool {
 				resp := core.NewMessage(msg.Message.Chat.ID, "未找到sticker,请对一个sticker回复该指令")
 				resp.ReplyToMessageID = msg.Message.MessageID
 				if _, e := msg.Bot.Send(resp); e != nil {
-					msg.Bot.Printf("%6s - getsticker failed to send response: \"%v\".\n", "info", e)
+					msg.Bot.Printf("%6s - getsticker failed to send response: \"%v\".\n", "warn", e)
 				}
 			} else {
 				go func() { _, _ = msg.Bot.Send(core.NewChatAction(msg.Message.Chat.ID, "UPLOAD_DOCUMENT")) }()
@@ -66,32 +66,32 @@ func handle(msg core.Message) <-chan bool {
 
 				slink, e := msg.Bot.GetFileDirectURL(sticker.FileID)
 				if e != nil {
-					msg.Bot.Printf("%6s - getsticker failed to get file link: \"%v\".\n", "info", e)
+					msg.Bot.Printf("%6s - getsticker failed to get file link: \"%v\".\n", "warn", e)
 					return
 				}
 
 				sresp, e := client.Get(slink)
 				if e != nil {
-					msg.Bot.Printf("%6s - getsticker failed to download file: \"%v\".\n", "info", e)
+					msg.Bot.Printf("%6s - getsticker failed to download file: \"%v\".\n", "warn", e)
 					return
 				}
 				ibody, e := ioutil.ReadAll(sresp.Body)
 				sresp.Body.Close()
 				if e != nil {
-					msg.Bot.Printf("%6s - getsticker failed to download file: \"%v\".\n", "info", e)
+					msg.Bot.Printf("%6s - getsticker failed to download file: \"%v\".\n", "warn", e)
 					return
 				}
 
 				image, e := webp.Decode(bytes.NewReader(ibody))
 				if e != nil {
-					//msg.Bot.Printf("%6s - getsticker failed to decode sticker file: \"%v\".\n", "info", e)
+					//msg.Bot.Printf("%6s - getsticker failed to decode sticker file: \"%v\".\n", "warn", e)
 					decodeTGS(ibody, sticker.SetName+"-"+sticker.FileID, msg)
 					return
 				}
 				var buf bytes.Buffer
 				e = png.Encode(&buf, image)
 				if e != nil {
-					msg.Bot.Printf("%6s - getsticker failed to encode sticker file: \"%v\".\n", "info", e)
+					msg.Bot.Printf("%6s - getsticker failed to encode sticker file: \"%v\".\n", "warn", e)
 					return
 				}
 				resp := core.NewDocumentUpload(
@@ -100,7 +100,7 @@ func handle(msg core.Message) <-chan bool {
 				)
 
 				if _, e := msg.Bot.Send(resp); e != nil {
-					msg.Bot.Printf("%6s - getsticker failed to send response: \"%v\".\n", "info", e)
+					msg.Bot.Printf("%6s - getsticker failed to send response: \"%v\".\n", "warn", e)
 				}
 			}
 		} else {

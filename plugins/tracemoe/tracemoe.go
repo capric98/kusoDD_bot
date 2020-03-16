@@ -2,7 +2,6 @@ package tracemoe
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -70,9 +69,9 @@ func handle(msg core.Message) {
 	resp := core.NewMessage(msg.Message.Chat.ID, "")
 	defer func() {
 		if e := recover(); e != nil {
-			resp.Text = fmt.Sprintf("查询异常：%v", e)
+			resp.Text = "查询失败，请稍后重试。"
 			_, _ = msg.Bot.Send(resp)
-			msg.Bot.Printf("%6s - tracemoe failed: \"%v\".\n", "info", e)
+			msg.Bot.Printf("%6s - tracemoe failed: \"%v\".\n", "warn", e)
 		}
 	}()
 
@@ -105,7 +104,7 @@ func handle(msg core.Message) {
 
 		u, e := msg.Bot.GetFileDirectURL(fid)
 		if e != nil {
-			msg.Bot.Printf("%6s - tracemoe failed to get direct url: \"%v\".\n", "info", e)
+			msg.Bot.Printf("%6s - tracemoe failed to get direct url: \"%v\".\n", "warn", e)
 			return
 		}
 
@@ -120,7 +119,7 @@ func handle(msg core.Message) {
 
 		h := make(textproto.MIMEHeader)
 		h.Set("Content-Disposition",
-			fmt.Sprintf(`form-data; name="image"; filename="%s"`, getFilename(u)))
+			`form-data; name="image"; filename="`+getFilename(u)+`"`)
 		p, _ := w.CreatePart(h)
 		_, _ = p.Write(body)
 		w.Close()
@@ -158,7 +157,7 @@ func handle(msg core.Message) {
 				strconv.FormatFloat(doc0.At, 'f', -1, 64) + "&token=" + doc0.TokenThumb + "&mute"
 
 			if mresp, err := client.Get(mediaUrl); err != nil {
-				msg.Bot.Printf("%6s - tracemoe failed to download media: \"%v\".\n", "info", e)
+				msg.Bot.Printf("%6s - tracemoe failed to download media: \"%v\".\n", "warn", e)
 			} else {
 				fr := core.NewFileBytes("capture.mp4", mresp.Body, mresp.ContentLength)
 				ac := core.NewAnimationUpload(msg.Message.Chat.ID, fr)
@@ -169,14 +168,14 @@ func handle(msg core.Message) {
 					"`\n*From* `" + strconv.FormatFloat(doc0.From, 'f', -1, 64) + "s` *to* `" +
 					strconv.FormatFloat(doc0.To, 'f', -1, 64) + "s`"
 				if _, e := msg.Bot.Send(ac); e != nil {
-					msg.Bot.Printf("%6s - tracemoe failed to send response: \"%v\".\n", "info", e)
+					msg.Bot.Printf("%6s - tracemoe failed to send response: \"%v\".\n", "warn", e)
 				}
 			}
 
 			return
 		}
 		// If there are some results back, the function will return before these.
-		msg.Bot.Printf("%6s - tracemoe: no Docs! Limit left: %d, Quota left %d\n", "info", tresp.Limit, tresp.Quota)
+		msg.Bot.Printf("%6s - tracemoe: no Docs! Limit left: %d, Quota left %d\n", "warn", tresp.Limit, tresp.Quota)
 		resp.Text = "无查询结果，这可能是由于图片中带有黑边、遮挡物，或者trace.moe未收录"
 	}
 	_, _ = msg.Bot.Send(resp)

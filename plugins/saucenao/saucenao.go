@@ -1,7 +1,6 @@
 package saucenao
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -86,18 +85,18 @@ func handle(msg core.Message) {
 			var e error
 			u, e := msg.Bot.GetFileDirectURL(fid)
 			if e != nil {
-				msg.Bot.Printf("%6s - saucenao failed to get direct url: \"%v\".\n", "info", e)
+				msg.Bot.Printf("%6s - saucenao failed to get direct url: \"%v\".\n", "warn", e)
 			}
 			go func() { _, _ = msg.Bot.Send(core.NewChatAction(msg.Message.Chat.ID, "TYPING")) }()
 			resp.Text, e = search(u, msg)
 			resp.ParseMode = "Markdown"
 			if e != nil {
-				msg.Bot.Printf("%6s - saucenao failed to search pic: \"%v\".\n", "info", e)
-				resp.Text = fmt.Sprintf("查询失败：%v", e)
+				msg.Bot.Printf("%6s - saucenao failed to search pic: \"%v\".\n", "warn", e)
+				resp.Text = "查询失败，请稍后重试。"
 			}
 		}
 		if _, e := msg.Bot.Send(resp); e != nil {
-			msg.Bot.Printf("%6s - saucenao failed to send response: \"%v\".\n", "info", e)
+			msg.Bot.Printf("%6s - saucenao failed to send response: \"%v\".\n", "warn", e)
 		}
 	} else {
 		ack <- false
