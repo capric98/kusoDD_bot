@@ -26,6 +26,10 @@ func New(settings map[string]interface{}) (func(core.Message) <-chan bool, time.
 		default:
 			break
 		}
+		if msg.Message == nil {
+			ack <- false
+			return ack
+		}
 		if msg.Message.IsCommand() {
 			switch msg.Message.Command() {
 			case "help":

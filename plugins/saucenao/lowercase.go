@@ -51,6 +51,10 @@ func New(settings map[string]interface{}) (func(core.Message) <-chan bool, time.
 }
 
 func handle(msg core.Message) {
+	if msg.Message == nil {
+		ack <- false
+		return
+	}
 	if (msg.Message.IsCommand() && msg.Message.Command() == "whatpic") || msg.CaptionCommand() == "whatpic" {
 		ack <- true
 		var maxsize int
