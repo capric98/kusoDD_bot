@@ -131,7 +131,7 @@ func search(u string, msg core.Message) (result string, e error) {
 		result = "\n*Similarity :* " + sresp.Results[0].Header.Similarity
 		result += "%\n*Illustrator:* " + sresp.Results[0].Data.MemName +
 			"\n*Pixiv ID     :* [" + strconv.Itoa(sresp.Results[0].Data.PixivID) +
-			"](" + result + sresp.Results[0].Data.ExtUrls[0] + ")"
+			"](" + sresp.Results[0].Data.ExtUrls[0] + ")"
 	} else {
 		result = sresp.Results[0].Data.ExtUrls[0]
 		result += "\n*Similarity:* " + sresp.Results[0].Header.Similarity
