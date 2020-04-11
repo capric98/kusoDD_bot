@@ -43,9 +43,10 @@ func decodeTGS(pic []byte, filename string, msg core.Message) {
 		_ = tgsCMD.Run()
 
 		ffmpegCMD := exec.Command("ffmpeg", "-i", tmpDir+"/"+filename+".avi",
-			"-vf", "\"format=rgb24,geq=r='if(gt(r(X,Y)+g(X,Y)+b(X,Y),32),r(X,Y),255)':g='if(gt(r(X,Y)+g(X,Y)+b(X,Y),32),g(X,Y),255)':b='if(gt(r(X,Y)+g(X,Y)+b(X,Y),32),b(X,Y),255)'\"",
+			"-vf", "format=rgb24,geq=r='if(gt(r(X,Y)+g(X,Y)+b(X,Y),32),r(X,Y),255)':g='if(gt(r(X,Y)+g(X,Y)+b(X,Y),32),g(X,Y),255)':b='if(gt(r(X,Y)+g(X,Y)+b(X,Y),32),b(X,Y),255)'",
 			"-loop", "65535", tmpDir+"/"+filename+ext)
 		_ = ffmpegCMD.Run()
+		// ffmpegCMD.Stderr = os.Stderr
 		_ = os.Remove(tmpDir + "/" + filename + ".avi")
 	}
 
