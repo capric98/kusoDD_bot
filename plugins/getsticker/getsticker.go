@@ -18,6 +18,7 @@ var (
 	python, script string
 )
 
+// New :)
 func New(settings map[string]interface{}) (func(core.Message) <-chan bool, time.Duration, []core.Opt) {
 	if settings["python"] != nil {
 		python = settings["python"].(string)

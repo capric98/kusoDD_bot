@@ -8,6 +8,10 @@ import (
 	"github.com/capric98/kusoDD_bot/core"
 )
 
+var (
+	tmpDir = "tmp_getsticker"
+)
+
 // pip(3) install tgs cairosvg numpy fonttools pillow scipy opencv-python
 // Windows: https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer
 
@@ -26,24 +30,26 @@ func decodeTGS(pic []byte, filename string, msg core.Message) {
 	default:
 		ext = ".gif"
 	}
-	if _, e := os.Stat("tmp/" + filename + ext); os.IsNotExist(e) {
-		if e := ioutil.WriteFile("tmp/"+filename+".tgs", pic, 0777); e != nil {
+	if _, e := os.Stat(tmpDir + "/" + filename + ext); os.IsNotExist(e) {
+		if e := ioutil.WriteFile(tmpDir+"/"+filename+".tgs", pic, 0777); e != nil {
 			msg.Bot.Printf("%6s - getsticker failed to write tgs file: \"%v\".\n", "info", e)
 			return
 		}
-		defer func() { _ = os.Remove("tmp/" + filename + ".tgs") }()
+		defer func() { _ = os.Remove(tmpDir + "/" + filename + ".tgs") }()
 
 		tgsCMD := exec.Command(python, script, "--input-format", "lottie", "--output-format", "video",
-			"--sanitize", "tmp/"+filename+".tgs", "tmp/"+filename+".avi")
+			"--sanitize", tmpDir+"/"+filename+".tgs", tmpDir+"/"+filename+".avi")
 		tgsCMD.Stderr = os.Stderr
 		_ = tgsCMD.Run()
 
-		ffmpegCMD := exec.Command("ffmpeg", "-i", "tmp/"+filename+".avi", "-loop", "65535", "tmp/"+filename+ext)
+		ffmpegCMD := exec.Command("ffmpeg", "-i", tmpDir+"/"+filename+".avi",
+			"-vf", "\"format=rgb24,geq=r='if(gt(r(X,Y)+g(X,Y)+b(X,Y),32),r(X,Y),255)':g='if(gt(r(X,Y)+g(X,Y)+b(X,Y),32),g(X,Y),255)':b='if(gt(r(X,Y)+g(X,Y)+b(X,Y),32),b(X,Y),255)'\"",
+			"-loop", "65535", tmpDir+"/"+filename+ext)
 		_ = ffmpegCMD.Run()
-		_ = os.Remove("tmp/" + filename + ".avi")
+		_ = os.Remove(tmpDir + "/" + filename + ".avi")
 	}
 
-	fr, e := os.Open("tmp/" + filename + ext)
+	fr, e := os.Open(tmpDir + "/" + filename + ext)
 	if e != nil {
 		msg.Bot.Printf("%6s - getsticker failed to open cached gif file: \"%v\".\n", "info", e)
 		return
@@ -60,7 +66,8 @@ func decodeTGS(pic []byte, filename string, msg core.Message) {
 }
 
 func checkTmp() {
-	if _, e := os.Stat("tmp"); os.IsNotExist(e) {
-		_ = os.Mkdir("tmp", 0660)
+	if _, e := os.Stat(tmpDir); !os.IsNotExist(e) {
+		_ = os.RemoveAll(tmpDir)
 	}
+	_ = os.Mkdir(tmpDir, 0660)
 }
