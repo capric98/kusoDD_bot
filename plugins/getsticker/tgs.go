@@ -16,6 +16,7 @@ var (
 // Windows: https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer
 
 // /usr/bin/env python3 tgsconvert.py --input-format lottie --output-format video --sanitize sticker.tgs sticker.avi
+// This almost works fine, but sometimes would get an incomplete video clip, which is beyond my ability to solve it.
 
 func decodeTGS(pic []byte, filename string, msg core.Message) {
 	defer func() {
